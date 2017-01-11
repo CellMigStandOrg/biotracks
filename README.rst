@@ -1,6 +1,6 @@
-Sample Module Repository
+A data package representation for cell migration tracking data.
 ========================
 
-This simple project is an example repo for Python projects.
+This Python project aims to create a simple Python library to produce data package representation of cell migration tracking data.
 
-`Learn more <http://www.kennethreitz.org/essays/repository-structure-and-python>`_.
+See: http://frictionlessdata.io/ and http://frictionlessdata.io/data-packages/ 
