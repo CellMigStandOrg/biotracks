@@ -10,14 +10,13 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='sample',
+    name='datapackage',
     version='0.1.0',
-    description='Sample package for Python-Guide.org',
+    description='Data package representation for cell migration tracking data',
     long_description=readme,
-    author='Kenneth Reitz',
-    author_email='me@kennethreitz.com',
-    url='https://github.com/kennethreitz/samplemod',
+    author='paola masuzzo',
+    author_email='paola.masuzzo@ugent.be',
+    url='https://github.com/pcmasuzzo/dpkg',
     license=license,
     packages=find_packages(exclude=('tests', 'docs'))
 )
-
