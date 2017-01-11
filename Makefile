@@ -2,4 +2,6 @@ init:
 	pip install -r requirements.txt
 
 test:
-	nosetests tests
+	py.test tests
+
+.PHONY: init test
