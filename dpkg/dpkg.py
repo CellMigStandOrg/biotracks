@@ -5,6 +5,8 @@ import readfile
 import createdp
 import pushtopandas
 import plot
+import pandas as pd
+import numpy as np
 
 # global variable - file name from the command line
 filename = sys.argv[1]
@@ -80,6 +82,12 @@ if G:
         plot.plotXY(norm, joint_identifier, input_reference[
             0] + 'norm', input_reference[
                 1] + 'norm')
+        ta_norm = plot.compute_ta(norm, joint_identifier, input_reference[
+            0], input_reference[1])
+        theta = ta_norm.ta[~np.isnan(ta_norm.ta)]
+        theta_deg = theta.apply(math.degrees)
+        theta = pd.DataFrame(theta)
+        plot.plot_polar(theta, 10)
     except KeyError as ke:
         print('!!! Seems like one or more variable provided are not in the dataset.')
         print('Try again, please.')  # for now, just restart
