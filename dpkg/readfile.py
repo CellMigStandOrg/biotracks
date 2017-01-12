@@ -133,7 +133,7 @@ def group_by_joint_id(f, joint_id):
         print('Seems like ' + joint_id +
               " is not the right joint_identifier for " + os.path.basename(f))
         print('Exiting now.')
-        return None
+        return
 
 
 def split_in_objs_evnts(joint_id, grouped):

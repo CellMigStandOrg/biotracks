@@ -30,6 +30,14 @@ def top_level_info():
 
 
 def create_dpkg(dictionary, directory, joint_id):
+    """Create the datapackage representation.
+
+    Keyword arguments:
+    dictionary -- the dictionary containing events and objects
+    directory -- the directory
+    joint_id -- the joint_identifier
+    """
+
     top_dict = top_level_info()
     myDP = dp.DataPackage()
 
@@ -80,5 +88,4 @@ def create_dpkg(dictionary, directory, joint_id):
          }
     )
 
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-    print('The json: {}'.format(myDP.to_json()))
+    return myDP
