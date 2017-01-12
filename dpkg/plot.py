@@ -119,4 +119,5 @@ def plot_polar(theta, N):
         for r, bar in zip(radii, bars):
             bar.set_facecolor(plt.cm.Spectral(r))
             bar.set_alpha(0.5)
+
     sns.plt.show()
