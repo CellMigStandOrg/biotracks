@@ -5,13 +5,9 @@ import os
 import csv
 import pandas as pd
 
-# global variable - file name from the command line
-filename = sys.argv[1]
-nrows = 10
-
 
 def xls_to_csv(xls_file):
-    """Utility function needed to read Excel files."""
+    """Utility function to read Excel files."""
 
     import xlrd
     from xlrd import XLRDError
@@ -140,12 +136,11 @@ def group_by_joint_id(f, joint_id):
     except KeyError:  # throw an error if the wrong id is passed
         print('Seems like ' + joint_id +
               " is not the right joint_identifier for " + os.path.basename(f))
+        print('Exiting now.')
         return None
 
-# create objects and events dataframes
 
-
-def split_in_objs_evnts(grouped):
+def split_in_objs_evnts(joint_id, grouped):
     """Creta the objects and events dataframes.
 
     Keyword arguments:
@@ -159,20 +154,5 @@ def split_in_objs_evnts(grouped):
     objects_df = pd.concat(dfs)
 
     events_df = pd.DataFrame(grouped.size()).reset_index()
-    events_df.columns = [joint_identifier, 'events_size']
-
+    events_df.columns = [joint_id, 'events_size']
     return {'objects': objects_df, 'events': events_df}
-
-# the dictionary
-D = split_in_objs_evnts(G)
-
-# make directory for the csv and the dp representation
-wd = os.path.dirname(os.path.realpath(f))
-directory = wd + os.sep + 'dp'
-if not os.path.exists(directory):
-    os.makedirs(directory)
-
-# write the dataframes to csv
-for k, v in D.items():
-    v.to_csv(directory + os.sep + k + '.csv', index=False)
-    print(">>> Files written to directory!")

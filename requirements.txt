@@ -1,3 +1,2 @@
 datapackage
-jupyter
 jsontableschema-pandas
