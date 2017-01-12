@@ -1,5 +1,6 @@
 import sys
 import os
+import collections
 import readfile
 import createdp
 import pushtopandas
@@ -8,6 +9,22 @@ import plot
 # global variable - file name from the command line
 filename = sys.argv[1]
 nrows = 10
+
+
+def getinputfromuser():
+    x_coord = input(
+        "Please enter the column name for the x_coordinate: ")
+    print('>>> x_coord is {}'.format(x_coord))
+
+    y_coord = input(
+        "Please enter the column name for the y_coordinate: ")
+    print('>>> y_coord is {}'.format(y_coord))
+
+    time = input(
+        "Please enter the column name for the time: ")
+    print('>>> time is {}'.format(time))
+
+    return (x_coord, y_coord, time)
 
 
 f = readfile.import_file(filename, nrows)
@@ -43,21 +60,26 @@ if G:
     # push to pandas
     trajectories_df = pushtopandas.push_to_pandas(directory, joint_identifier)
     print(trajectories_df.head()), print(trajectories_df.tail())
-    print('number of rows {}'.format(trajectories_df.shape[0]))
-    print('number of columns {}'.format(trajectories_df.shape[1]))
+    print('Number of rows: {}'.format(trajectories_df.shape[0]))
+    print('Number of columns: {}'.format(trajectories_df.shape[1]))
 
     # basic visualizations
-    x_coord = input(
-        "Please enter the column name for the x_coordinate: ")
-    print('>>> x_coord is {}'.format(x_coord))
+    input_reference = getinputfromuser()
+    print('The input reference was: {}'.format(input_reference))
+    try:
+        plot.prepareforplot(trajectories_df, input_reference[
+                            0], input_reference[1], input_reference[2])
+        plot.plotXY(trajectories_df, joint_identifier, input_reference[
+            0], input_reference[1])
 
-    y_coord = input(
-        "Please enter the column name for the y_coordinate: ")
-    print('>>> y_coord is {}'.format(y_coord))
+        print('Please wait, normalizing dataset....')
+        norm = plot.normalize(trajectories_df, joint_identifier, input_reference[
+            0], input_reference[1])
 
-    time = input(
-        "Please enter the column name for the time: ")
-    print('>>> time is {}'.format(time))
-
-    plot.prepareforplot(trajectories_df, x_coord, y_coord, time)
-    plot.plotrawtraj(trajectories_df, joint_identifier, x_coord, y_coord)
+        print('Dataset normaized to the origin of the coordinate system.')
+        plot.plotXY(norm, joint_identifier, input_reference[
+            0] + 'norm', input_reference[
+                1] + 'norm')
+    except KeyError as ke:
+        print('!!! Seems like one or more variable provided are not in the dataset.')
+        print('Try again, please.')  # for now, just restart
