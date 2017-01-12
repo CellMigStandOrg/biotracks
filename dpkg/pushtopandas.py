@@ -1,6 +1,7 @@
 # import needed libraries
 import os
 import datapackage as dp
+import pandas as pd
 
 
 def push_to_pandas(directory, joint_id):
@@ -14,8 +15,8 @@ def push_to_pandas(directory, joint_id):
     storage = dp.push_datapackage(descriptor=descr, backend='pandas')
     print(storage.buckets)
 
-    objects = stg['objects___objectstable']
-    events = stg['events___eventstable']
+    objects = storage['objects___objectstable']
+    events = storage['events___eventstable']
     print(objects.head()), print(events.head())
 
     events.reset_index(inplace=True)
