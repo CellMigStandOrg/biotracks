@@ -1,3 +1,4 @@
+# This writes a simple configuration file with two sections
 import configparser
 
 config = configparser.ConfigParser()
