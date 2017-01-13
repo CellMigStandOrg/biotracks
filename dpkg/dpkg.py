@@ -5,6 +5,7 @@ import readfile
 import createdp
 import pushtopandas
 import plot
+import math
 import pandas as pd
 import numpy as np
 
@@ -82,6 +83,7 @@ if G:
         plot.plotXY(norm, joint_identifier, input_reference[
             0] + 'norm', input_reference[
                 1] + 'norm')
+        print('Please wait, computing turning angles ....')
         ta_norm = plot.compute_ta(norm, joint_identifier, input_reference[
             0], input_reference[1])
         theta = ta_norm.ta[~np.isnan(ta_norm.ta)]

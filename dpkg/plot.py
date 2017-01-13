@@ -77,20 +77,21 @@ def compute_ta(df, joint_id, x_coord, y_coord):
     """
     list_ = []
     for track in df[joint_id].unique():
+        temp = pd.DataFrame()
         temp_tracks = df[df[joint_id] == track]
         for i, row in enumerate(temp_tracks.iterrows()):
             temp_tracks_row = temp_tracks.iloc[[i]]
             if i == 0:
                 previousX, previousY = row[1][x_coord], row[1][y_coord]
-                temp_tracks_row['ta'] = float('NaN')
+                temp.loc[i, 'ta'] = float('NaN')
             else:
                 delta_x, delta_y = row[1][x_coord] - \
                     previousX, row[1][y_coord] - previousY
                 previousX, previousY = row[1][x_coord], row[1][y_coord]
                 ta = math.atan2(delta_y, delta_x)
-                temp_tracks_row['ta'] = ta
+                temp.loc[i, 'ta'] = ta
 
-            list_.append(temp_tracks_row)
+            list_.append(temp)
 
     df = pd.concat(list_)
     return df
@@ -110,7 +111,7 @@ def plot_polar(theta, N):
 
     # the actual plotting logic
     g = sns.FacetGrid(theta, size=4)
-    g.fig.suptitle('Polar plot -- turning angles')
+
     radii = hist / max(hist)
 
     for ax in g.axes.flat:

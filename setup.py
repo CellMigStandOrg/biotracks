@@ -10,13 +10,13 @@ with open('LICENSE') as f:
     license = f.read()
 
 setup(
-    name='datapackage',
+    name='cell_track_dpkg',
     version='0.1.0',
     description='Data package representation for cell migration tracking data',
     long_description=readme,
     author='paola masuzzo',
     author_email='paola.masuzzo@ugent.be',
-    url='https://github.com/pcmasuzzo/dpkg',
+    url='https://github.com/pcmasuzzo/cell_track_dpkg',
     license=license,
     packages=find_packages(exclude=('tests', 'docs'))
 )
