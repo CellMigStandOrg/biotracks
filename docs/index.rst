@@ -1,7 +1,7 @@
 .. sample documentation master file, created by
    sphinx-quickstart.
 
-Welcome to sample's documentation!
+Welcome to dpkg's documentation!
 ==================================
 
 Contents:

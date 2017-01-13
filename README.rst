@@ -1,5 +1,5 @@
 A data package representation for cell migration tracking data.
-========================
+
 
 This Python project aims to create a simple Python package to produce data package representation of cell migration tracking data.
 
