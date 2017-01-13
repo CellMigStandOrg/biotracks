@@ -1,5 +1,4 @@
-import configuration
-from configuration import readConfigFile
+from dpkg.configuration import readConfigFile
 import unittest
 import os
 
@@ -29,7 +28,6 @@ class ReadConfigFileTest(unittest.TestCase):
         """Test routine readconfigfile"""
         print("ReadConfigFileTest:test_01_readconfigfile")
         self.assertTrue(os.path.exists(cf))
-        global dict_
         dict_ = readConfigFile.readconfigfile(cf)
         print('Dictionary returned: {}'.format(dict_))
         assert dict_ is not None

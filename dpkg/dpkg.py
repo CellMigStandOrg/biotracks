@@ -2,44 +2,41 @@ import sys
 import os
 import collections
 import configuration
+import math
+import pandas as pd
+import numpy as np
+from configuration import readConfigFile
 import readfile
 import createdp
 import pushtopandas
 import plot
-import math
-import pandas as pd
-import numpy as np
+
 
 # global variable - file name from the command line
 filename = r'C:\Users\paola\Desktop\cell_track\tracks_ctr.csv'
 # filename = sys.argv[1]
 nrows = 10
 
-
-def getinputfromuser():
-    x_coord = input(
-        "Please enter the column name for the x_coordinate: ")
-    print('>>> x_coord is {}'.format(x_coord))
-
-    y_coord = input(
-        "Please enter the column name for the y_coordinate: ")
-    print('>>> y_coord is {}'.format(y_coord))
-
-    time = input(
-        "Please enter the column name for the time: ")
-    print('>>> time is {}'.format(time))
-
-    return (x_coord, y_coord, time)
-
 # read the file given through command line
 f = readfile.import_file(filename, nrows)
-# search for correspondent .ini configuration file in the directory
-# if the file is found, read it and get the properties dictionary
-for file_ in os.listdir(f):
-    if file_.endswith(".ini"):
-        print(file_)
-        config_file = file_
-        break
+
+
+def lookAndReadConfigFile(track_file):
+    """Looks for configuration file in the directory of f and tries to read it.
+
+    Keyword arguments:
+    track_file -- the tracking file associated with the .ini
+    """
+    for file_ in os.listdir(os.path.dirname(track_file)):
+        if file_.endswith(".ini"):
+            print('Configuration file found: {}'.format(file_))
+            file_ = os.path.join(os.path.dirname(track_file), file_)
+            config_dict = readConfigFile.readconfigfile(file_)
+            print('Configuration dictionary: {}.'.format(config_dict))
+            break
+    return config_dict
+
+config_dict = lookAndReadConfigFile(f)
 
 
 joint_identifier = input(
