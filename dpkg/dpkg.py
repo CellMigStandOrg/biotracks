@@ -1,6 +1,7 @@
 import sys
 import os
 import collections
+import configuration
 import readfile
 import createdp
 import pushtopandas
@@ -10,7 +11,8 @@ import pandas as pd
 import numpy as np
 
 # global variable - file name from the command line
-filename = sys.argv[1]
+filename = r'C:\Users\paola\Desktop\cell_track\tracks_ctr.csv'
+# filename = sys.argv[1]
 nrows = 10
 
 
@@ -29,8 +31,17 @@ def getinputfromuser():
 
     return (x_coord, y_coord, time)
 
-
+# read the file given through command line
 f = readfile.import_file(filename, nrows)
+# search for correspondent .ini configuration file in the directory
+# if the file is found, read it and get the properties dictionary
+for file_ in os.listdir(f):
+    if file_.endswith(".ini"):
+        print(file_)
+        config_file = file_
+        break
+
+
 joint_identifier = input(
     "Please enter the column name for the joint_identifier: ")
 print('>>> joint_identifier is {}'.format(joint_identifier))
