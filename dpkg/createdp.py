@@ -9,46 +9,26 @@ import collections
 from collections import defaultdict
 
 
-def top_level_info():
-    """Returns a dictionary for the top level information."""
-    author = 'author'
-    author_email = 'author@email.com'
-
-    top = (
-        ('title', 'cell tracking file'),
-        ('name', 'tracking-file'),
-        ('author', author),
-        ('author_email', author_email)
-    )
-
-    top_dict = defaultdict(list)
-    for k, v in top:
-        top_dict[k].append((v))
-
-    print('The top_dict: {}'.format(top_dict.items()))
-    return top_dict
-
-
-def create_dpkg(dictionary, directory, joint_id):
+def create_dpkg(top_level_dict, ev_ob_dict, directory, joint_id):
     """Create the datapackage representation.
 
     Keyword arguments:
-    dictionary -- the dictionary containing events and objects
+    top_level_dict -- the dictionary with the TOP_LEVEL_INFO
+    ev_ob_dict -- the dictionary containing events and objects
     directory -- the directory
     joint_id -- the joint_identifier
     """
 
-    top_dict = top_level_info()
     myDP = dp.DataPackage()
 
-    for k, v in top_dict.items():
+    for k, v in top_level_dict.items():
         myDP.descriptor[k] = v
 
     myDP.descriptor['resources'] = []
 
     # the events block #
     key = 'events'
-    events_table = dictionary.get(key)
+    events_table = ev_ob_dict.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')
@@ -66,7 +46,7 @@ def create_dpkg(dictionary, directory, joint_id):
 
     # the objects block #
     key = 'objects'
-    objects_table = dictionary.get(key)
+    objects_table = ev_ob_dict.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')

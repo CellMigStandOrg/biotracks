@@ -11,9 +11,6 @@ def readconfigfile(configurationFile):
     config = configparser.ConfigParser()
     config.read(configurationFile)
 
-    print(configurationFile)
-    print(config)
-
     print('Sections of the configuration file: {}'.format(config.sections()))
 
     config_dict = {}

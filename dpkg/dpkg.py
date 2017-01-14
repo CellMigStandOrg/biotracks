@@ -13,8 +13,8 @@ import plot
 
 
 # global variable - file name from the command line
-filename = r'C:\Users\paola\Desktop\cell_track\tracks_ctr.csv'
-# filename = sys.argv[1]
+# filename = r'C:\Users\paola\Desktop\cell_track\tracks_ctr.csv'
+filename = sys.argv[1]
 nrows = 10
 
 # read the file given through command line
@@ -38,10 +38,9 @@ def lookAndReadConfigFile(track_file):
 
 config_dict = lookAndReadConfigFile(f)
 
-
-joint_identifier = input(
-    "Please enter the column name for the joint_identifier: ")
-print('>>> joint_identifier is {}'.format(joint_identifier))
+track_dict = config_dict.get('TRACKING_DATA')
+top_level_dict = config_dict.get('TOP_LEVEL_INFO')
+joint_identifier = track_dict.get('joint_identifier')
 
 G = readfile.group_by_joint_id(f, joint_identifier)
 
@@ -59,7 +58,7 @@ if G:
     print(">>> csv objects and events files written to directory.")
 
     # the data package representation
-    dp = createdp.create_dpkg(D, directory, joint_identifier)
+    dp = createdp.create_dpkg(top_level_dict, D, directory, joint_identifier)
     print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
     print('The json: {}'.format(dp.to_json()))
 
@@ -74,26 +73,21 @@ if G:
     print('Number of rows: {}'.format(trajectories_df.shape[0]))
     print('Number of columns: {}'.format(trajectories_df.shape[1]))
 
+    x = track_dict.get('x_coord_field')
+    y = track_dict.get('y_coord_field')
+    t = track_dict.get('time_field')
     # basic visualizations
-    input_reference = getinputfromuser()
-    print('The input reference was: {}'.format(input_reference))
     try:
-        plot.prepareforplot(trajectories_df, input_reference[
-                            0], input_reference[1], input_reference[2])
-        plot.plotXY(trajectories_df, joint_identifier, input_reference[
-            0], input_reference[1])
+        plot.prepareforplot(trajectories_df, x, y, t)
+        plot.plotXY(trajectories_df, joint_identifier, x, y)
 
         print('Please wait, normalizing dataset....')
-        norm = plot.normalize(trajectories_df, joint_identifier, input_reference[
-            0], input_reference[1])
+        norm = plot.normalize(trajectories_df, joint_identifier, x, y)
 
         print('Dataset normaized to the origin of the coordinate system.')
-        plot.plotXY(norm, joint_identifier, input_reference[
-            0] + 'norm', input_reference[
-                1] + 'norm')
+        plot.plotXY(norm, joint_identifier, x + 'norm', y + 'norm')
         print('Please wait, computing turning angles ....')
-        ta_norm = plot.compute_ta(norm, joint_identifier, input_reference[
-            0], input_reference[1])
+        ta_norm = plot.compute_ta(norm, joint_identifier, x, y)
         theta = ta_norm.ta[~np.isnan(ta_norm.ta)]
         theta_deg = theta.apply(math.degrees)
         theta = pd.DataFrame(theta)
