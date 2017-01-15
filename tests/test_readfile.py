@@ -21,7 +21,7 @@ class ReadFileTest(unittest.TestCase):
         global f
         global n
         global joint_id
-        f = os.path.join(directory, "tracks_ctr.csv")
+        f = "test_files/tracks_ctr.csv"
         n = 20
         joint_id = 'Track N'
         print("ReadFileTest:setUp_:end")

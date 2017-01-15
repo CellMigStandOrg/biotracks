@@ -2,8 +2,6 @@ from dpkg.configuration import readConfigFile
 import unittest
 import os
 
-directory = r'C:\Users\paola\Desktop'
-
 
 class ReadConfigFileTest(unittest.TestCase):
     """Read a configuration file test."""
@@ -13,7 +11,8 @@ class ReadConfigFileTest(unittest.TestCase):
         """ Setting up for the test """
         print("ReadConfigFileTest:setUp_:begin")
         global cf
-        cf = os.path.join(directory, "cell_track_dpkg.ini")
+        cf = "test_files/cell_track_dpkg.ini"
+        print(cf)
         print("ReadConfigFileTest:setUp_:end")
 
     # ending the test
