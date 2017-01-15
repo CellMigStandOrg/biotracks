@@ -7,13 +7,17 @@ Steps to follow to use the package:
 
 + **step 1** - modify the parameters in the file *writeConfigFile.py*, go to the directory containing your tracking file and run:
 
-``python writeConfigFile.py``
+.. code-block:: python
+
+  python writeConfigFile.py
 
 this will create the *.ini configuration file*
 
 +  **step 2** - run:
 
-``python dpkg.python your_tracking_file``
+.. code-block:: python
+
+  python dpkg.python your_tracking_file
 
 this will create a **dp** directory containing:
 
@@ -108,5 +112,4 @@ This last file will look something like this:
       }
 
 
-
-At the moment, the package also creates simple visualizations of tracks and turning angles.
+Then, the datapackage is pushed to a **pandas** dataframe. At the moment, this dataframe is used to creates simple visualizations of tracks and turning angles.
