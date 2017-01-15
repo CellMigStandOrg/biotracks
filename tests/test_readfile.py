@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-# needed if *not* using nosetests
-# sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../dpkg")
+# needed if using pytest (not needed for py.test)
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../dpkg")
 import dpkg
 from dpkg import readfile
 import unittest
