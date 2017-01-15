@@ -10,6 +10,7 @@ import readfile
 import createdp
 import pushtopandas
 import plot
+import csv
 
 
 # global variable - file name from the command line
@@ -54,7 +55,8 @@ if G:
 
     # write the dataframes to csv
     for k, v in D.items():
-        v.to_csv(directory + os.sep + k + '.csv', index=False)
+        v.to_csv(directory + os.sep + k + '.csv',
+                 index=False, quoting=csv.QUOTE_NONE)
     print(">>> csv objects and events files written to directory.")
 
     # the data package representation

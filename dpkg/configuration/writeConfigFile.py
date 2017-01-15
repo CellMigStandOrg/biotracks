@@ -3,16 +3,16 @@ import configparser
 
 #### TOP LEVEL INFO SECTION ########
 title = 'example-cell-migration-tracking-file'
-name = 'tracking-file-Essen'
+name = 'tracking-file-track_mate'
 author = 'paola masuzzo'
 author_email = 'paola.masuzzo@ugent.be'
-author_institute = 'Essen University'
+author_institute = 'VIB'
 
 #### TRACKING DATA SECTION ########
-joint_identifier = 'Track N'
-x_coord_field = 'X'
-y_coord_field = 'Y'
-time_field = 'Time Sample N'
+joint_identifier = 'Label'
+x_coord_field = 'XCordinate'
+y_coord_field = 'YCordinate'
+time_field = 'Label'
 
 config = configparser.ConfigParser()
 config['TOP_LEVEL_INFO'] = {'title': title,

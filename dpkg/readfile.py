@@ -2,12 +2,13 @@
 import csv
 import os
 import pandas as pd
+import xlrd
+from xlrd import XLRDError
+import xml.etree.ElementTree as ET
 
 
 def xls_to_csv(xls_file):
     """Utility function to read Excel files."""
-    import xlrd
-    from xlrd import XLRDError
 
     x = xlrd.open_workbook(xls_file)
     x1 = x.sheet_by_index(0)
@@ -23,7 +24,7 @@ def xls_to_csv(xls_file):
 
 def trackMate_to_csv(trackMate_file):
     """Utility function to read a TrackMate XML file and convert it to a plain csv."""
-    import xml.etree.ElementTree as ET
+
     tree = ET.parse(trackMate_file)
     root = tree.getroot()
     print('>>>')
