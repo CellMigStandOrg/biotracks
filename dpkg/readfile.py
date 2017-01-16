@@ -13,10 +13,10 @@ def xls_to_csv(xls_file):
     x = xlrd.open_workbook(xls_file)
     x1 = x.sheet_by_index(0)
     name, extension = os.path.splitext(xls_file)
-    csvfile = open(name + '.csv', 'wb')
-    writecsv = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+    csvfile = open(name + '.csv', 'w')
+    writecsv = csv.writer(csvfile, quoting=csv.QUOTE_NONE)
 
-    for rownum in xrange(sh.nrows):
+    for rownum in range(x1.nrows):
         writecsv.writerow(x1.row_values(rownum))
 
     csvfile.close()
@@ -113,7 +113,7 @@ def import_file(f, n):
                 print('>>> header of the file:')
             elif i == 1:
                 print('>>> rest of the file:')
-            print(reader.readline())  # print header
+            print(reader.readline())
     return f
 
 

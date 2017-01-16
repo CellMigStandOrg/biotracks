@@ -13,6 +13,24 @@ Steps to follow to use the package:
 
 this will create the *.ini configuration file*
 
+This file should look something like this:
+
+.. code-block::
+
+  [TOP_LEVEL_INFO]
+  author = the author of the dp
+  title = a title describing the dp
+  name = a name for the dp
+  author_institute = the insitute of the author
+  author_email = a valid email address
+
+  [TRACKING_DATA]
+  x_coord_field = the field pointing to the x coordinate
+  y_coord_field = the field pointing to the y coordinate
+  time_field = the field pointing to the time information
+  joint_identifier = the track identifier joining objects and events
+
+
 +  **step 2** - run:
 
 .. code-block:: python
