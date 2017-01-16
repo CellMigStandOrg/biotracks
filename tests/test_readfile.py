@@ -8,8 +8,6 @@ from dpkg import readfile
 import unittest
 import pandas as pd
 
-directory = r'C:\Users\paola\Desktop\cell_track'
-
 
 class ReadFileTest(unittest.TestCase):
     """Read file test."""
