@@ -130,4 +130,4 @@ This last file will look something like this:
       }
 
 
-Then, the datapackage is pushed to a **pandas** dataframe. At the moment, this dataframe is used to creates simple visualizations of tracks and turning angles.
+Then, the datapackage is pushed to a **pandas** dataframe. At the moment, this dataframe is used to create simple visualizations of tracks and turning angles.
