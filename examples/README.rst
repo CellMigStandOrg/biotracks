@@ -32,4 +32,4 @@ This file was generated with commercial software at University of Essen. Contact
 
 trajectories.csv
 +++++++++++++++++++++++++++++++++
-This file was generated with commercial software at University of Essen. Contact: Matthias Gunzer.
+This file was generated with the free and open-source Python toolbox created at VIB. Contact: Sami Naji.
