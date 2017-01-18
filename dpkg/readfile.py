@@ -6,7 +6,6 @@ import xlrd
 from xlrd import XLRDError
 import xml.etree.ElementTree as ET
 
-
 def xls_to_csv(xls_file):
     """Utility function to read Excel files."""
 
@@ -111,6 +110,7 @@ def import_file(f, n):
     f -- the file (from command line)
     n -- number of rows to visualize (default 10)
     """
+
     if f.endswith('.xls'):
         try:
             xls_to_csv(f)
@@ -132,15 +132,16 @@ def import_file(f, n):
     # open the file and show a quick preview
     print('>>> opening file: %s' % f)
 
-    with open(f, 'r', encoding='utf-8') as reader:
+    with open(f, 'r') as reader:
         print(f)
         for i in range(n):
             if i == 0:
                 print('>>> header of the file:')
             elif i == 1:
                 print('>>> rest of the file:')
-            print(reader.readline())
-            if reader.readline().startswith(''):
+            line = reader.readline()
+            print(line)
+            if line.startswith(',,,'):
                 print(
                     'Trying to read an xls file generated with the ICY track_processor plugin.')
                 print('The file will be cleaned up and reformatted.')

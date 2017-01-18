@@ -33,7 +33,8 @@ def plotXY(df, joint_id, x_coord, y_coord):
     grid = sns.FacetGrid(df, hue=joint_id,
                          size=6, palette=sns.color_palette("Set1", 10))
     grid.fig.suptitle('XY trajectories')
-    grid.map(plt.plot, x_coord, y_coord, marker="o", ms=0.3)
+    grid.map(plt.plot, x_coord, y_coord, marker=".", ms=0.3)
+    grid.map(plt.scatter, x_coord, y_coord, marker="o", s=20)
     grid.set_xticklabels(rotation=90)
     sns.plt.show()
 
