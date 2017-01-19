@@ -33,3 +33,7 @@ This file was generated with commercial software at University of Essen. Contact
 trajectories.csv
 +++++++++++++++++++++++++++++++++
 This file was generated with the free and open-source Python toolbox created at VIB. Contact: Sami Naji.
+
+ExampleFile1_NucleusFeatures.xls
+++++++++++++++++++++++++++++++++
+This file was generated with a Fiji/ImageJ plugin. Please note that this file describes end-point data. Contact: Peter Friedl and Merijn van Erp.
