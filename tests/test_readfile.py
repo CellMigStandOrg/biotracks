@@ -3,7 +3,7 @@ import os
 import sys
 # needed if using pytest (not needed for py.test)
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../dpkg")
-import dpkg
+
 from dpkg import readfile
 import unittest
 import pandas as pd
