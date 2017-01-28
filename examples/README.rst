@@ -37,3 +37,7 @@ This file was generated with the free and open-source Python toolbox created at 
 ExampleFile1_NucleusFeatures.xls
 ++++++++++++++++++++++++++++++++
 This file was generated with a Fiji/ImageJ plugin. Please note that this file describes end-point data. Contact: Peter Friedl and Merijn van Erp.
+
+tracks_matlab.csv
+++++++++++++++++++++++++++++++++
+This file is a csv transformation of a matlab (.mat) cell tracking file. Contact: Philippe Roudot, University of Texas Southwestern Medical Center.
