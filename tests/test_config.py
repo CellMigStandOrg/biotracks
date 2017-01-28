@@ -1,32 +1,22 @@
 from dpkg.configuration import readConfigFile
-import unittest
+from pytest import fixture
 import os
 
 
-class ReadConfigFileTest(unittest.TestCase):
+@fixture()
+def ini_file():
+    directory = os.path.dirname(__file__)
+    return os.path.join(
+        directory, "test_files", "cell_track_dpkg.ini")
+
+
+class TestReadConfigFile(object):
     """Read a configuration file test."""
 
-    # preparing to test
-    def setUp(self):
-        """ Setting up for the test """
-        print("ReadConfigFileTest:setUp_:begin")
-        global cf
-        cf = "test_files/cell_track_dpkg.ini"
-        print(cf)
-        print("ReadConfigFileTest:setUp_:end")
-
-    # ending the test
-    def tearDown(self):
-        """Cleaning up after the test"""
-        print("ReadConfigFileTest:tearDown_:begin")
-        # do something...
-        print("ReadConfigFileTest:tearDown_:end")
-
-    # test routine read
-    def test_01_readconfigfile(self):
+    def test_01_readconfigfile(self, ini_file):
         """Test routine readconfigfile"""
         print("ReadConfigFileTest:test_01_readconfigfile")
-        self.assertTrue(os.path.exists(cf))
-        dict_ = readConfigFile.readconfigfile(cf)
+        assert os.path.exists(ini_file)
+        dict_ = readConfigFile.readconfigfile(ini_file)
         print('Dictionary returned: {}'.format(dict_))
         assert dict_ is not None
