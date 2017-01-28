@@ -40,4 +40,4 @@ This file was generated with a Fiji/ImageJ plugin. Please note that this file de
 
 tracks_matlab.csv
 ++++++++++++++++++++++++++++++++
-This file is a csv transformation of a matlab (.mat) cell tracking file. Contact: Philippe Roudot.
+This file is a csv transformation of a matlab (.mat) cell tracking file. Contact: Philippe Roudot, University of Texas Southwestern Medical Center.
