@@ -3,7 +3,6 @@ import os
 import datapackage as dp
 import pandas as pd
 
-
 def push_to_pandas(directory, joint_id):
     """Push the datapackage to a pandas storage.
 
@@ -21,7 +20,7 @@ def push_to_pandas(directory, joint_id):
 
     events.reset_index(inplace=True)
     print(events.head())
-
+    
     # aggregation
     trajectories = pd.merge(objects, events, how='outer', on=joint_id)
 

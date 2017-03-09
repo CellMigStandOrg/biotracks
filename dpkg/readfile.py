@@ -1,10 +1,12 @@
 # import needed libraries
 import csv
 import os
+import xml.etree.ElementTree as ET
+
 import pandas as pd
 import xlrd
 from xlrd import XLRDError
-import xml.etree.ElementTree as ET
+
 
 def xls_to_csv(xls_file):
     """Utility function to read Excel files."""
@@ -37,48 +39,132 @@ def trackMate_to_csv(trackMate_file):
             spots = child
             for spot_in_frame in spots.getchildren():
                 for spot in spot_in_frame.getchildren():
-                    spot_id = int(spot.get('ID'))
 
-                    position_x = float(spot.get('POSITION_X'))
-                    position_y = float(spot.get('POSITION_Y'))
-                    position_t = float(spot.get('POSITION_T'))
+                    SPOT_ID = int(spot.get('ID'))
+                    spots_dict[SPOT_ID] = []
 
-                    spots_dict[spot_id] = (position_x, position_y, position_t)
+                    FRAME = int(spot.get('FRAME'))
+                    POSITION_X = float(spot.get('POSITION_X'))
+                    POSITION_Y = float(spot.get('POSITION_Y'))
+
+                    # insert into dict {frame, x, y}
+                    spots_dict[SPOT_ID].append((FRAME, POSITION_X, POSITION_Y))
 
     print('>>> Found {} unique spots'.format(len(spots_dict)))
 
+    # write the objects dictionary to file
+    name, extension = os.path.splitext(trackMate_file)
+    objects_csvfile = open(name + '_objects.csv', 'w')
+    writecsv = csv.writer(objects_csvfile, lineterminator='\n')
+    # write header
+    writecsv.writerow(["SPOT_ID", "FRAME", "POSITION_X", "POSITION_Y"])
+
+    for key, value in spots_dict.items():
+        for element in spots_dict.get(key):
+            row = [key, element[0], element[1], element[2]]
+            writecsv.writerow(row)
+
+    objects_csvfile.close()
+
+    # dictionary for the edges (which will be converted into CMSO:links)
+    edges_dict = {}
+    for child in root.find('Model'):
+        if child.tag == 'AllTracks':
+            tracks = child
+            EDGE_ID = 0
+            for track in tracks.getchildren():
+                TRACK_ID = int(track.get('TRACK_ID'))
+                for edge in track.getchildren():
+                    EDGE_ID = EDGE_ID + 1
+                    edges_dict[EDGE_ID] = []
+                    SPOT_SOURCE_ID = int(edge.get('SPOT_SOURCE_ID'))
+                    SPOT_TARGET_ID = int(edge.get('SPOT_TARGET_ID'))
+                    edges_dict[EDGE_ID].append(TRACK_ID)
+                    edges_dict[EDGE_ID].append(SPOT_SOURCE_ID)
+                    edges_dict[EDGE_ID].append(SPOT_TARGET_ID)
+
+    print('>>> Found {} unique edges'.format(len(edges_dict)))
+
+    # write the tracks dictionary to file
+    edges_csvfile = open(name + '_edges.csv', 'w')
+    writecsv = csv.writer(edges_csvfile, lineterminator='\n')
+    # write header
+    writecsv.writerow(
+        ["EDGE_ID", "TRACK_ID", "SPOT_SOURCE_ID", "SPOT_TARGET_ID"])
+
+    for key, value in edges_dict.items():
+        row = [key, value[0], value[1], value[2]]
+        writecsv.writerow(row)
+
+    edges_csvfile.close()
+
+    edges_csvfile = open(name + '_edges.csv', 'r')
+    edges_df = pd.read_csv(edges_csvfile)
+    # order in place by the spot_id
+    edges_df.sort_values('SPOT_SOURCE_ID', inplace=True)
+
+    list_ = []
+
+    #links_df = pd.DataFrame(columns=['LINK_ID','SPOT_ID'])
+    link_id = -1
+
+    for track_id in edges_df.TRACK_ID.unique():
+
+        link_id = link_id + 1
+        subset = edges_df.loc[edges_df['TRACK_ID'] == track_id]
+        subset.reset_index(inplace = True)
+        for index, row in subset.iterrows():
+
+            subset_row = subset.loc[[index]]
+            subset_row['LINK_ID'], subset_row[
+                'SPOT_ID'] = link_id, row['SPOT_SOURCE_ID']
+            list_.append(subset_row)
+
+
+        index_row = subset.shape[0] - 1
+        last_row = subset.loc[[index_row]]
+
+        last_row['LINK_ID'], last_row[
+            'SPOT_ID'] = link_id,  last_row['SPOT_TARGET_ID']
+        list_.append(last_row)
+
+    links_df = pd.concat(list_)
+    links_df = links_df[['LINK_ID', 'SPOT_ID']]
+    print(links_df)
+    links_df.to_csv(name + '_links.csv', index=False)
+
+
+"""
     # dictionary for the tracks
     tracks_dict = {}
     for child in root.find('Model'):
         if child.tag == 'AllTracks':
             tracks = child
             for track in tracks.getchildren():
-                track_index = int(track.get('TRACK_INDEX'))
-                tracks_dict[track_index] = []
+                TRACK_ID = int(track.get('TRACK_ID'))
+                tracks_dict[TRACK_ID] = []
                 for edge in track.getchildren():
-                    spot_source_id = int(edge.get('SPOT_SOURCE_ID'))
-                    spot_target_id = int(edge.get('SPOT_TARGET_ID'))
+                    SPOT_SOURCE_ID = int(edge.get('SPOT_SOURCE_ID'))
+                    SPOT_TARGET_ID = int(edge.get('SPOT_TARGET_ID'))
 
-                    tracks_dict[track_index].append(
-                        spots_dict.get(spot_source_id))
-                    tracks_dict[track_index].append(
-                        spots_dict.get(spot_target_id))
+                    tracks_dict[TRACK_ID].append(SPOT_SOURCE_ID)
+                    tracks_dict[TRACK_ID].append(SPOT_TARGET_ID)
 
     print('>>> Found {} unique tracks'.format(len(tracks_dict)))
 
-    # write the dictionary to file
-    name, extension = os.path.splitext(trackMate_file)
-    csvfile = open(name + '.csv', 'w')
-    writecsv = csv.writer(csvfile, lineterminator='\n')
+    # write the tracks dictionary to file
+    tracks_csvfile = open(name + '_tracks.csv', 'w')
+    writecsv = csv.writer(tracks_csvfile, lineterminator='\n')
     # write header
-    writecsv.writerow(["trackID", "x", "y", "t"])
+    writecsv.writerow(["TRACK_ID", "SPOT_ID"])
 
     for key, value in tracks_dict.items():
         for element in tracks_dict.get(key):
-            row = [key, element[0], element[1], element[2]]
+            row = [key]
             writecsv.writerow(row)
 
-    csvfile.close()
+    tracks_csvfile.close()
+"""
 
 
 def clean_icy_file(icy_file):

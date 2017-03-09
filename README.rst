@@ -1,7 +1,7 @@
 A datapackage representation of cell migration-derived tracking files.
 ******************************************************************************
 
-This Python project aims to create a simple Python package to produce data packages of cell migration tracking files. The final goal is to have a uniform, standardized way to represent these data, as in: http://frictionlessdata.io/ and http://frictionlessdata.io/data-packages/.
+This Python project aims to create a simple Python package to produce data packages of cell migration tracking files. The final goal is to have a uniform, standardized way to represent these data, as in `Frictionless Data <http://frictionlessdata.io/>`_ and `Data Packages <http://frictionlessdata.io/data-packages/>`_ .
 
 Steps to follow to use the package:
 
@@ -25,10 +25,12 @@ This file should look something like this:
   author_email = a valid email address
 
   [TRACKING_DATA]
-  x_coord_field = the field pointing to the x coordinate
-  y_coord_field = the field pointing to the y coordinate
-  time_field = the field pointing to the time information
-  joint_identifier = the track identifier joining objects and events
+  CMSO:x_coord = the column name pointing to the x coordinate
+  CMSO:y_coord = the column name pointing to the y coordinate
+  CMSO:z_coord = the column name pointing to the z coordinate
+  CMSO:frame = the column name pointing to the frame information
+  CMSO:object_id = the object identifier
+  CMSO:link_id = the link identifier
 
 
 +  **step 2** - run:
@@ -39,9 +41,9 @@ This file should look something like this:
 
 this will create a **dp** directory containing:
 
-+ a *.csv* file for the **objects** (cells)
-+ a *.csv* file for the **events** (tracks)
-+ and finally a **dp.json** file containing the schemas of the two.
++ a *csv* file for the **objects** (i.e. cells)
++ a *csv* file for the **links** (i.e. a linear collection of objects)
++ and a **dp.json** file containing the *json* schemas of the two *csv* files.
 
 
 This last file will look something like this:
