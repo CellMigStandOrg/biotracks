@@ -79,9 +79,15 @@ def trackMate_to_csv(trackMate_file):
                     edges_dict[EDGE_ID] = []
                     SPOT_SOURCE_ID = int(edge.get('SPOT_SOURCE_ID'))
                     SPOT_TARGET_ID = int(edge.get('SPOT_TARGET_ID'))
+
+                    SOURCE_FRAME = spots_dict.get(SPOT_SOURCE_ID)[0][0]
+                    TARGET_FRAME = spots_dict.get(SPOT_TARGET_ID)[0][0]
+
                     edges_dict[EDGE_ID].append(TRACK_ID)
                     edges_dict[EDGE_ID].append(SPOT_SOURCE_ID)
                     edges_dict[EDGE_ID].append(SPOT_TARGET_ID)
+                    edges_dict[EDGE_ID].append(SOURCE_FRAME)
+                    edges_dict[EDGE_ID].append(TARGET_FRAME)
 
     print('>>> Found {} unique edges'.format(len(edges_dict)))
 
@@ -90,21 +96,89 @@ def trackMate_to_csv(trackMate_file):
     writecsv = csv.writer(edges_csvfile, lineterminator='\n')
     # write header
     writecsv.writerow(
-        ["EDGE_ID", "TRACK_ID", "SPOT_SOURCE_ID", "SPOT_TARGET_ID"])
+        ["EDGE_ID", "TRACK_ID", "SPOT_SOURCE_ID", "SPOT_TARGET_ID", "SOURCE_FRAME", "TARGET_FRAME"])
 
     for key, value in edges_dict.items():
-        row = [key, value[0], value[1], value[2]]
+        row = [key, value[0], value[1], value[2], value[3], value[4]]
         writecsv.writerow(row)
 
     edges_csvfile.close()
 
     edges_csvfile = open(name + '_edges.csv', 'r')
     edges_df = pd.read_csv(edges_csvfile)
-    # order in place by the spot_id
-    edges_df.sort_values('SPOT_SOURCE_ID', inplace=True)
 
+    ordered_edges_df = edges_df.sort_values(
+        ['TRACK_ID', 'SOURCE_FRAME', 'TARGET_FRAME'])
+    ordered_edges_df.reset_index(inplace=True)
+    print(ordered_edges_df)
+
+    link_dict = {}
+
+    LINK_ID = 0
+    for i, row in ordered_edges_df.iterrows():
+        print('i is: {}'.format(i))
+
+        if LINK_ID not in link_dict:
+            link_dict[LINK_ID] = []
+
+        temp_row = ordered_edges_df.loc[[i]]
+        if i == 0:
+
+            # LOOK AT FRAMES
+
+            previousSource, previousTarget = row[
+                'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
+            # take both spots and assign them to the current link
+            link_dict[LINK_ID].append(previousSource)
+            #link_dict[LINK_ID].append(previousTarget)
+
+            print(link_dict)
+        else:
+            currentSource, currentTarget = row[
+                'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
+            print(link_dict)
+            if currentSource == previousSource:
+                # split event
+
+                origin_link_id = LINK_ID
+                LINK_ID = origin_link_id + 1
+
+                if LINK_ID not in link_dict:
+                    link_dict[LINK_ID] = []
+
+                link_dict[origin_link_id].append(previousSource)
+                link_dict[LINK_ID].append(currentSource)
+                print(previousSource, currentSource)
+
+            elif currentTarget == previousTarget:
+                # merge event
+                print('OK')
+
+            else:
+                # no events - good to go
+                # assign objects to the link
+                link_dict[LINK_ID].append(currentSource)
+                #link_dict[LINK_ID].append(currentTarget)
+
+            previousSource, previousTarget = row[
+                'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
+
+
+
+
+    for track_id in edges_df.TRACK_ID.unique():
+        subset_track = edges_df.loc[edges_df['TRACK_ID'] == track_id]
+        subset_track.reset_index(inplace=True)
+        ordered_subset_track = subset_track.sort_values(
+            ['SOURCE_FRAME', 'TARGET_FRAME'])
+        # print(ordered_subset_track)
+
+        # initialize link and keep adding objects to it
+        # unless
+
+    """
+    ###### STARTINT LINK######################################
     list_ = []
-
     #links_df = pd.DataFrame(columns=['LINK_ID','SPOT_ID'])
     link_id = -1
 
@@ -132,7 +206,7 @@ def trackMate_to_csv(trackMate_file):
     links_df = links_df[['LINK_ID', 'SPOT_ID']]
     print(links_df)
     links_df.to_csv(name + '_links.csv', index=False)
-
+"""
 
 """
     # dictionary for the tracks
