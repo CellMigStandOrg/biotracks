@@ -32,66 +32,63 @@ def trackMate_to_csv(trackMate_file):
     print('Reading a TrackMate XML file version {}'.format(
         root.attrib.get('version')))
 
-    # dictionary for the spots
+    ################################
+    ### dictionary for the spots ###
+    ################################
     spots_dict = {}
     for child in root.find('Model'):
         if child.tag == 'AllSpots':
             spots = child
             for spot_in_frame in spots.getchildren():
                 for spot in spot_in_frame.getchildren():
-
+                    # the key
                     SPOT_ID = int(spot.get('ID'))
-                    spots_dict[SPOT_ID] = []
-
+                    # the value
                     FRAME = int(spot.get('FRAME'))
                     POSITION_X = float(spot.get('POSITION_X'))
                     POSITION_Y = float(spot.get('POSITION_Y'))
-
                     # insert into dict {frame, x, y}
-                    spots_dict[SPOT_ID].append((FRAME, POSITION_X, POSITION_Y))
+                    spots_dict[SPOT_ID] = [FRAME, POSITION_X, POSITION_Y]
 
     print('>>> Found {} unique spots'.format(len(spots_dict)))
 
-    # write the objects dictionary to file
+    # write the objects dictionary to a csv file
     name, extension = os.path.splitext(trackMate_file)
     objects_csvfile = open(name + '_objects.csv', 'w')
     writecsv = csv.writer(objects_csvfile, lineterminator='\n')
-    # write header
+    # header
     writecsv.writerow(["SPOT_ID", "FRAME", "POSITION_X", "POSITION_Y"])
 
     for key, value in spots_dict.items():
-        for element in spots_dict.get(key):
-            row = [key, element[0], element[1], element[2]]
-            writecsv.writerow(row)
+        row = [key, value[0], value[1], value[2]]
+        writecsv.writerow(row)
 
     objects_csvfile.close()
 
-    # dictionary for the edges (which will be converted into CMSO:links)
+    ################################
+    ### dictionary for the edges ###
+    ################################
     edges_dict = {}
+    EDGE_ID = 0
     for child in root.find('Model'):
         if child.tag == 'AllTracks':
             tracks = child
-            EDGE_ID = 0
             for track in tracks.getchildren():
                 TRACK_ID = int(track.get('TRACK_ID'))
                 for edge in track.getchildren():
-                    EDGE_ID = EDGE_ID + 1
-                    edges_dict[EDGE_ID] = []
+
                     SPOT_SOURCE_ID = int(edge.get('SPOT_SOURCE_ID'))
                     SPOT_TARGET_ID = int(edge.get('SPOT_TARGET_ID'))
-
-                    SOURCE_FRAME = spots_dict.get(SPOT_SOURCE_ID)[0][0]
-                    TARGET_FRAME = spots_dict.get(SPOT_TARGET_ID)[0][0]
-
-                    edges_dict[EDGE_ID].append(TRACK_ID)
-                    edges_dict[EDGE_ID].append(SPOT_SOURCE_ID)
-                    edges_dict[EDGE_ID].append(SPOT_TARGET_ID)
-                    edges_dict[EDGE_ID].append(SOURCE_FRAME)
-                    edges_dict[EDGE_ID].append(TARGET_FRAME)
+                    SOURCE_FRAME = spots_dict.get(SPOT_SOURCE_ID)[0]
+                    TARGET_FRAME = spots_dict.get(SPOT_TARGET_ID)[0]
+                    # insert {key, value}
+                    edges_dict[EDGE_ID] = [TRACK_ID, SPOT_SOURCE_ID,
+                                           SPOT_TARGET_ID, SOURCE_FRAME, TARGET_FRAME]
+                    EDGE_ID += 1
 
     print('>>> Found {} unique edges'.format(len(edges_dict)))
 
-    # write the tracks dictionary to file
+    # write the edges dictionary to a csv file
     edges_csvfile = open(name + '_edges.csv', 'w')
     writecsv = csv.writer(edges_csvfile, lineterminator='\n')
     # write header
@@ -101,17 +98,84 @@ def trackMate_to_csv(trackMate_file):
     for key, value in edges_dict.items():
         row = [key, value[0], value[1], value[2], value[3], value[4]]
         writecsv.writerow(row)
-
     edges_csvfile.close()
 
-    edges_csvfile = open(name + '_edges.csv', 'r')
-    edges_df = pd.read_csv(edges_csvfile)
-
+    # dictionary into pandas dataframe
+    edges_df = pd.DataFrame([[key, value[0], value[1], value[2], value[3], value[4]] for key, value in edges_dict.items()], columns=[
+        "EDGE_ID", "TRACK_ID", "SPOT_SOURCE_ID", "SPOT_TARGET_ID", "SOURCE_FRAME", "TARGET_FRAME"])
+    # order the df
     ordered_edges_df = edges_df.sort_values(
         ['TRACK_ID', 'SOURCE_FRAME', 'TARGET_FRAME'])
     ordered_edges_df.reset_index(inplace=True)
-    print(ordered_edges_df)
+    # write to file
+    ordered_edges_df.to_csv('ordered_edges.csv', index=False)
 
+    ordered_edges_df['FRAME_DIFF'] = ordered_edges_df.groupby('TRACK_ID')[
+        'SOURCE_FRAME'].diff()
+    ordered_edges_df['SPOT_SOURCE_DIFF'] = ordered_edges_df.groupby('TRACK_ID')[
+        'SPOT_SOURCE_ID'].diff()
+    ordered_edges_df['SPOT_TARGET_DIFF'] = ordered_edges_df.groupby('TRACK_ID')[
+        'SPOT_TARGET_ID'].diff()
+
+    ordered_edges_df['EVENT'] = ['None'] * len(ordered_edges_df)
+
+    for i in range(len(ordered_edges_df)):
+        tmp = ordered_edges_df.iloc[i]
+
+        if tmp['FRAME_DIFF'] == 0:
+            if tmp['SPOT_SOURCE_DIFF'] == 0:
+                ordered_edges_df.loc[i, 'EVENT'] = 'split'
+            elif tmp['SPOT_TARGET_DIFF'] == 0:
+                ordered_edges_df.loc[i, 'EVENT'] = 'merge'
+        elif tmp['FRAME_DIFF'] > 1:
+            ordered_edges_df.loc[i, 'EVENT'] = 'gap'
+
+    print(ordered_edges_df)
+    ordered_edges_df.EVENT = ordered_edges_df.EVENT.shift(-1)
+    ordered_edges_df.to_csv('ordered_edges_events.csv', index=False)
+
+
+    links_dict = {}
+    LINK_ID = 0
+    for track in ordered_edges_df.TRACK_ID.unique():
+        links_dict[LINK_ID] = []
+        tmp = ordered_edges_df[ordered_edges_df.TRACK_ID == track]
+        links_dict[LINK_ID].append((row['SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']))
+        
+
+
+
+
+"""
+    links_dict = {}
+    LINK_ID = 0
+    for track in ordered_edges_df.TRACK_ID.unique():
+        links_dict[LINK_ID] = []
+        tmp = ordered_edges_df[ordered_edges_df.TRACK_ID == track]
+        for i, row in tmp.iterrows():
+            event = row['EVENT']
+
+            if event == 'None':
+                links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
+            elif event == 'split':
+                links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
+                source_split = tmp.loc[i].SPOT_SOURCE_ID
+                target_split = tmp.loc[i].SPOT_TARGET_ID
+
+                LINK_ID += 1
+                links_dict[LINK_ID] = [row['SPOT_TARGET_ID']]
+
+        LINK_ID += 1
+
+    print(links_dict)
+"""
+
+
+
+
+################################
+################################
+"""
     link_dict = {}
 
     LINK_ID = 0
@@ -130,7 +194,7 @@ def trackMate_to_csv(trackMate_file):
                 'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
             # take both spots and assign them to the current link
             link_dict[LINK_ID].append(previousSource)
-            #link_dict[LINK_ID].append(previousTarget)
+            # link_dict[LINK_ID].append(previousTarget)
 
             print(link_dict)
         else:
@@ -158,13 +222,10 @@ def trackMate_to_csv(trackMate_file):
                 # no events - good to go
                 # assign objects to the link
                 link_dict[LINK_ID].append(currentSource)
-                #link_dict[LINK_ID].append(currentTarget)
+                # link_dict[LINK_ID].append(currentTarget)
 
             previousSource, previousTarget = row[
                 'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
-
-
-
 
     for track_id in edges_df.TRACK_ID.unique():
         subset_track = edges_df.loc[edges_df['TRACK_ID'] == track_id]
@@ -176,8 +237,9 @@ def trackMate_to_csv(trackMate_file):
         # initialize link and keep adding objects to it
         # unless
 
-    """
-    ###### STARTINT LINK######################################
+
+###### STARTINT LINK######################################
+
     list_ = []
     #links_df = pd.DataFrame(columns=['LINK_ID','SPOT_ID'])
     link_id = -1
