@@ -130,20 +130,81 @@ def trackMate_to_csv(trackMate_file):
         elif tmp['FRAME_DIFF'] > 1:
             ordered_edges_df.loc[i, 'EVENT'] = 'gap'
 
-    print(ordered_edges_df)
     ordered_edges_df.EVENT = ordered_edges_df.EVENT.shift(-1)
     ordered_edges_df.to_csv('ordered_edges_events.csv', index=False)
 
-
     links_dict = {}
     LINK_ID = 0
+
     for track in ordered_edges_df.TRACK_ID.unique():
-        links_dict[LINK_ID] = []
+        event = False
         tmp = ordered_edges_df[ordered_edges_df.TRACK_ID == track]
-        links_dict[LINK_ID].append((row['SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']))
-        
+        tmp = tmp.reset_index()
+        links_dict[LINK_ID] = []
+        for index, row in tmp.iterrows():
+
+            if row['EVENT'] == 'None' and event is False:
+                links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
+                links_dict[LINK_ID].append(row['SPOT_TARGET_ID'])
+
+                if index == 0 and (row['SPOT_TARGET_ID']) != (tmp.iloc[index+1].SPOT_SOURCE_ID):
+
+                    LINK_ID += 1
+                    links_dict[LINK_ID] = []
+                    event = True
+
+            elif row['EVENT'] == 'split':
+                event = True
+                LINK_ID += 1
+                links_dict[LINK_ID] = []
+                links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
+                links_dict[LINK_ID].append(row['SPOT_TARGET_ID'])
+
+            elif row['EVENT'] == 'merge':
+                event = True
+                for key, val in links_dict.items():
+                    if row['SPOT_SOURCE_ID'] == val[-1]:
+                        links_dict[key].append(row['SPOT_TARGET_ID'])
+                        links_dict[key].append(row['SPOT_SOURCE_ID'])
+
+            elif row['EVENT'] == 'gap':
+                if event is False:
+                    links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
+                    links_dict[LINK_ID].append(row['SPOT_TARGET_ID'])
+
+                elif event is True:
+                    for key, val in links_dict.items():
+                        if row['SPOT_SOURCE_ID'] == val[-1]:
+                            links_dict[key].append(row['SPOT_TARGET_ID'])
+                            links_dict[key].append(row['SPOT_SOURCE_ID'])
+                LINK_ID += 1
+                links_dict[LINK_ID] = []
 
 
+            elif row['EVENT'] == 'None' and event is True:
+                for key, val in links_dict.items():
+                    if not val:
+                        links_dict[key].append(row['SPOT_SOURCE_ID'])
+                        links_dict[key].append(row['SPOT_TARGET_ID'])
+                    if row['SPOT_SOURCE_ID'] == val[-1]:
+                        links_dict[key].append(row['SPOT_SOURCE_ID'])
+                        links_dict[key].append(row['SPOT_TARGET_ID'])
+
+        LINK_ID += 1
+    #print(links_dict)
+    links_dict_unique = {}
+    for key, value in links_dict.items():
+        unique_set = set(value)
+        links_dict_unique[key] = unique_set
+
+
+    links_df = pd.DataFrame()
+    for key, value in links_dict_unique.items():
+        for spot in value:
+            links_df = links_df.append([[key, spot]], ignore_index=True)
+    links_df.columns = ['LINK_ID', 'OBJECT_ID']
+    print(links_df)
+    links_df.to_csv('CMSO_links.csv', index=False)
 
 
 """
@@ -169,8 +230,6 @@ def trackMate_to_csv(trackMate_file):
 
     print(links_dict)
 """
-
-
 
 
 ################################
