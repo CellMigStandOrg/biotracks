@@ -3,25 +3,24 @@ import os
 import datapackage as dp
 import pandas as pd
 
-def push_to_pandas(directory, joint_id):
+def push_to_pandas(directory):
     """Push the datapackage to a pandas storage.
 
     Keyword arguments:
     directory -- the directory to look into for the json descriptor
-    joint_id -- the joint_identifier
     """
     descr = directory + os.sep + 'dp.json'
     storage = dp.push_datapackage(descriptor=descr, backend='pandas')
     print(storage.buckets)
 
     objects = storage['objects___objectstable']
-    events = storage['events___eventstable']
-    print(objects.head()), print(events.head())
+    links = storage['links___linkstable']
 
-    events.reset_index(inplace=True)
-    print(events.head())
-    
-    # aggregation
-    trajectories = pd.merge(objects, events, how='outer', on=joint_id)
+    objects.reset_index(inplace=True)
+    print(objects.head()), print(links.head())
 
-    return trajectories
+    # simple aggregation
+    # trajectories --> this will be a dataframe with link_id, track_id
+    # look at pair wise comparison across link_ids in the links dataframe
+
+    return {'objects' : objects, 'links' : links, 'trajectories' : trajectories}

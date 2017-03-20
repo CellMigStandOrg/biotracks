@@ -23,7 +23,7 @@ def xls_to_csv(xls_file):
     csv_file.close()
 
 
-def trackMate_to_csv(trackMate_file):
+def read_trackMate(trackMate_file):
     """Utility function to read a TrackMate XML file and convert it to a plain csv."""
 
     tree = ET.parse(trackMate_file)
@@ -49,34 +49,27 @@ def trackMate_to_csv(trackMate_file):
                     POSITION_Y = float(spot.get('POSITION_Y'))
                     # insert into dict {frame, x, y}
                     spots_dict[SPOT_ID] = [FRAME, POSITION_X, POSITION_Y]
-
+            break
     print('>>> Found {} unique spots'.format(len(spots_dict)))
 
-    # write the objects dictionary to a csv file
+    # dictionary into pandas dataframe
     name, extension = os.path.splitext(trackMate_file)
-    objects_csvfile = open(name + '_objects.csv', 'w')
-    writecsv = csv.writer(objects_csvfile, lineterminator='\n')
-    # header
-    writecsv.writerow(["SPOT_ID", "FRAME", "POSITION_X", "POSITION_Y"])
-
-    for key, value in spots_dict.items():
-        row = [key, value[0], value[1], value[2]]
-        writecsv.writerow(row)
-
-    objects_csvfile.close()
+    objects_df = pd.DataFrame([[key, value[0], value[1], value[2]] for key, value in spots_dict.items()], columns=[
+        "SPOT_ID", "FRAME", "POSITION_X", "POSITION_Y"])
+    # write the objects dataframe to a csv file
+    #objects_df.to_csv(name + '_CMSO_objects.csv', index=False)
 
     ################################
     ### dictionary for the edges ###
     ################################
     edges_dict = {}
-    EDGE_ID = 0
+    EDGE_ID = 0  # the key
     for child in root.find('Model'):
         if child.tag == 'AllTracks':
             tracks = child
             for track in tracks.getchildren():
                 TRACK_ID = int(track.get('TRACK_ID'))
                 for edge in track.getchildren():
-
                     SPOT_SOURCE_ID = int(edge.get('SPOT_SOURCE_ID'))
                     SPOT_TARGET_ID = int(edge.get('SPOT_TARGET_ID'))
                     SOURCE_FRAME = spots_dict.get(SPOT_SOURCE_ID)[0]
@@ -85,20 +78,9 @@ def trackMate_to_csv(trackMate_file):
                     edges_dict[EDGE_ID] = [TRACK_ID, SPOT_SOURCE_ID,
                                            SPOT_TARGET_ID, SOURCE_FRAME, TARGET_FRAME]
                     EDGE_ID += 1
+            break
 
     print('>>> Found {} unique edges'.format(len(edges_dict)))
-
-    # write the edges dictionary to a csv file
-    edges_csvfile = open(name + '_edges.csv', 'w')
-    writecsv = csv.writer(edges_csvfile, lineterminator='\n')
-    # write header
-    writecsv.writerow(
-        ["EDGE_ID", "TRACK_ID", "SPOT_SOURCE_ID", "SPOT_TARGET_ID", "SOURCE_FRAME", "TARGET_FRAME"])
-
-    for key, value in edges_dict.items():
-        row = [key, value[0], value[1], value[2], value[3], value[4]]
-        writecsv.writerow(row)
-    edges_csvfile.close()
 
     # dictionary into pandas dataframe
     edges_df = pd.DataFrame([[key, value[0], value[1], value[2], value[3], value[4]] for key, value in edges_dict.items()], columns=[
@@ -107,9 +89,8 @@ def trackMate_to_csv(trackMate_file):
     ordered_edges_df = edges_df.sort_values(
         ['TRACK_ID', 'SOURCE_FRAME', 'TARGET_FRAME'])
     ordered_edges_df.reset_index(inplace=True)
-    # write to file
-    ordered_edges_df.to_csv('ordered_edges.csv', index=False)
-
+    # compute the differences across successive rows in frame, spot_source and
+    # spot_target
     ordered_edges_df['FRAME_DIFF'] = ordered_edges_df.groupby('TRACK_ID')[
         'SOURCE_FRAME'].diff()
     ordered_edges_df['SPOT_SOURCE_DIFF'] = ordered_edges_df.groupby('TRACK_ID')[
@@ -117,37 +98,45 @@ def trackMate_to_csv(trackMate_file):
     ordered_edges_df['SPOT_TARGET_DIFF'] = ordered_edges_df.groupby('TRACK_ID')[
         'SPOT_TARGET_ID'].diff()
 
+    # create the 'EVENT' column to be added to the df
     ordered_edges_df['EVENT'] = ['None'] * len(ordered_edges_df)
 
     for i in range(len(ordered_edges_df)):
         tmp = ordered_edges_df.iloc[i]
-
+        # if difference in frame is 1: no events
         if tmp['FRAME_DIFF'] == 0:
+            # if difference of spot source is zero - split event
             if tmp['SPOT_SOURCE_DIFF'] == 0:
                 ordered_edges_df.loc[i, 'EVENT'] = 'split'
             elif tmp['SPOT_TARGET_DIFF'] == 0:
+                # if difference of spot target is zero - merge event
                 ordered_edges_df.loc[i, 'EVENT'] = 'merge'
+        # if difference of frame is bigger than 1 - gap event
         elif tmp['FRAME_DIFF'] > 1:
             ordered_edges_df.loc[i, 'EVENT'] = 'gap'
-
+    # shift the event one row up
     ordered_edges_df.EVENT = ordered_edges_df.EVENT.shift(-1)
-    ordered_edges_df.to_csv('ordered_edges_events.csv', index=False)
 
+    ################################
+    ### dictionary for the links ###
+    ################################
     links_dict = {}
+    # initialize id for the link
     LINK_ID = 0
 
     for track in ordered_edges_df.TRACK_ID.unique():
         event = False
-        tmp = ordered_edges_df[ordered_edges_df.TRACK_ID == track]
-        tmp = tmp.reset_index()
+        tmp = ordered_edges_df[
+            ordered_edges_df.TRACK_ID == track].reset_index()
         links_dict[LINK_ID] = []
         for index, row in tmp.iterrows():
 
             if row['EVENT'] == 'None' and event is False:
                 links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
                 links_dict[LINK_ID].append(row['SPOT_TARGET_ID'])
-
-                if index == 0 and (row['SPOT_TARGET_ID']) != (tmp.iloc[index+1].SPOT_SOURCE_ID):
+                # if source at row zero is not the same as target at row 1,
+                # flag an event
+                if index == 0 and (tmp.iloc[index].SPOT_TARGET_ID) != (tmp.iloc[index + 1].SPOT_SOURCE_ID):
 
                     LINK_ID += 1
                     links_dict[LINK_ID] = []
@@ -180,7 +169,6 @@ def trackMate_to_csv(trackMate_file):
                 LINK_ID += 1
                 links_dict[LINK_ID] = []
 
-
             elif row['EVENT'] == 'None' and event is True:
                 for key, val in links_dict.items():
                     if not val:
@@ -191,175 +179,22 @@ def trackMate_to_csv(trackMate_file):
                         links_dict[key].append(row['SPOT_TARGET_ID'])
 
         LINK_ID += 1
-    #print(links_dict)
+
+    # get only the unique spots
     links_dict_unique = {}
     for key, value in links_dict.items():
         unique_set = set(value)
         links_dict_unique[key] = unique_set
-
+    print('>>> Created {} links'.format(len(links_dict_unique)))
 
     links_df = pd.DataFrame()
     for key, value in links_dict_unique.items():
         for spot in value:
             links_df = links_df.append([[key, spot]], ignore_index=True)
-    links_df.columns = ['LINK_ID', 'OBJECT_ID']
-    print(links_df)
-    links_df.to_csv('CMSO_links.csv', index=False)
+    links_df.columns = ['LINK_ID', 'SPOT_ID']
+    #links_df.to_csv(name + '_CMSO_links.csv', index=False)
 
-
-"""
-    links_dict = {}
-    LINK_ID = 0
-    for track in ordered_edges_df.TRACK_ID.unique():
-        links_dict[LINK_ID] = []
-        tmp = ordered_edges_df[ordered_edges_df.TRACK_ID == track]
-        for i, row in tmp.iterrows():
-            event = row['EVENT']
-
-            if event == 'None':
-                links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
-            elif event == 'split':
-                links_dict[LINK_ID].append(row['SPOT_SOURCE_ID'])
-                source_split = tmp.loc[i].SPOT_SOURCE_ID
-                target_split = tmp.loc[i].SPOT_TARGET_ID
-
-                LINK_ID += 1
-                links_dict[LINK_ID] = [row['SPOT_TARGET_ID']]
-
-        LINK_ID += 1
-
-    print(links_dict)
-"""
-
-
-################################
-################################
-"""
-    link_dict = {}
-
-    LINK_ID = 0
-    for i, row in ordered_edges_df.iterrows():
-        print('i is: {}'.format(i))
-
-        if LINK_ID not in link_dict:
-            link_dict[LINK_ID] = []
-
-        temp_row = ordered_edges_df.loc[[i]]
-        if i == 0:
-
-            # LOOK AT FRAMES
-
-            previousSource, previousTarget = row[
-                'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
-            # take both spots and assign them to the current link
-            link_dict[LINK_ID].append(previousSource)
-            # link_dict[LINK_ID].append(previousTarget)
-
-            print(link_dict)
-        else:
-            currentSource, currentTarget = row[
-                'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
-            print(link_dict)
-            if currentSource == previousSource:
-                # split event
-
-                origin_link_id = LINK_ID
-                LINK_ID = origin_link_id + 1
-
-                if LINK_ID not in link_dict:
-                    link_dict[LINK_ID] = []
-
-                link_dict[origin_link_id].append(previousSource)
-                link_dict[LINK_ID].append(currentSource)
-                print(previousSource, currentSource)
-
-            elif currentTarget == previousTarget:
-                # merge event
-                print('OK')
-
-            else:
-                # no events - good to go
-                # assign objects to the link
-                link_dict[LINK_ID].append(currentSource)
-                # link_dict[LINK_ID].append(currentTarget)
-
-            previousSource, previousTarget = row[
-                'SPOT_SOURCE_ID'], row['SPOT_TARGET_ID']
-
-    for track_id in edges_df.TRACK_ID.unique():
-        subset_track = edges_df.loc[edges_df['TRACK_ID'] == track_id]
-        subset_track.reset_index(inplace=True)
-        ordered_subset_track = subset_track.sort_values(
-            ['SOURCE_FRAME', 'TARGET_FRAME'])
-        # print(ordered_subset_track)
-
-        # initialize link and keep adding objects to it
-        # unless
-
-
-###### STARTINT LINK######################################
-
-    list_ = []
-    #links_df = pd.DataFrame(columns=['LINK_ID','SPOT_ID'])
-    link_id = -1
-
-    for track_id in edges_df.TRACK_ID.unique():
-
-        link_id = link_id + 1
-        subset = edges_df.loc[edges_df['TRACK_ID'] == track_id]
-        subset.reset_index(inplace = True)
-        for index, row in subset.iterrows():
-
-            subset_row = subset.loc[[index]]
-            subset_row['LINK_ID'], subset_row[
-                'SPOT_ID'] = link_id, row['SPOT_SOURCE_ID']
-            list_.append(subset_row)
-
-
-        index_row = subset.shape[0] - 1
-        last_row = subset.loc[[index_row]]
-
-        last_row['LINK_ID'], last_row[
-            'SPOT_ID'] = link_id,  last_row['SPOT_TARGET_ID']
-        list_.append(last_row)
-
-    links_df = pd.concat(list_)
-    links_df = links_df[['LINK_ID', 'SPOT_ID']]
-    print(links_df)
-    links_df.to_csv(name + '_links.csv', index=False)
-"""
-
-"""
-    # dictionary for the tracks
-    tracks_dict = {}
-    for child in root.find('Model'):
-        if child.tag == 'AllTracks':
-            tracks = child
-            for track in tracks.getchildren():
-                TRACK_ID = int(track.get('TRACK_ID'))
-                tracks_dict[TRACK_ID] = []
-                for edge in track.getchildren():
-                    SPOT_SOURCE_ID = int(edge.get('SPOT_SOURCE_ID'))
-                    SPOT_TARGET_ID = int(edge.get('SPOT_TARGET_ID'))
-
-                    tracks_dict[TRACK_ID].append(SPOT_SOURCE_ID)
-                    tracks_dict[TRACK_ID].append(SPOT_TARGET_ID)
-
-    print('>>> Found {} unique tracks'.format(len(tracks_dict)))
-
-    # write the tracks dictionary to file
-    tracks_csvfile = open(name + '_tracks.csv', 'w')
-    writecsv = csv.writer(tracks_csvfile, lineterminator='\n')
-    # write header
-    writecsv.writerow(["TRACK_ID", "SPOT_ID"])
-
-    for key, value in tracks_dict.items():
-        for element in tracks_dict.get(key):
-            row = [key]
-            writecsv.writerow(row)
-
-    tracks_csvfile.close()
-"""
+    return (objects_df, links_df)
 
 
 def clean_icy_file(icy_file):
@@ -384,14 +219,13 @@ def clean_icy_file(icy_file):
     clean_file.close()
 
 
-def import_file(f, n):
-    """Takes file from command line and # of rows to visualize.
+def read_file(f):
+    """Takes file from command line.
 
     Keyword arguments:
     f -- the file (from command line)
-    n -- number of rows to visualize (default 10)
     """
-
+    # check for file extension
     if f.endswith('.xls'):
         try:
             xls_to_csv(f)
@@ -406,32 +240,16 @@ def import_file(f, n):
             print('Not an excel file.' + ' Copied and simply renamed to csv.')
 
     elif f.endswith('.xml'):
-        trackMate_to_csv(f)
-        name, extension = os.path.splitext(f)
-        f = name + '.csv'
+        (objects, links) = read_trackMate(f)
+        print('Successfully parsed a TrackMate XML file...')
 
-    # open the file and show a quick preview
-    print('>>> opening file: %s' % f)
+    # show objects and links previews
+    print('>>> showing objects dataframe...')
+    print(objects.head())
+    print('>>> showing links dataframe...')
+    print(links.head())
 
-    with open(f, 'r') as reader:
-        print(f)
-        for i in range(n):
-            if i == 0:
-                print('>>> header of the file:')
-            elif i == 1:
-                print('>>> rest of the file:')
-            line = reader.readline()
-            print(line)
-            if line.startswith(',,,'):
-                print(
-                    'Trying to read an xls file generated with the ICY track_processor plugin.')
-                print('The file will be cleaned up and reformatted.')
-                clean_icy_file(f)
-                name, extension = os.path.splitext(f)
-                f = name + '_clean.csv'
-                print('New file to work with: {}'.format(f))
-                break
-    return f
+    return {'objects' : objects, 'links' : links}
 
 
 def group_by_joint_id(f, joint_id):
