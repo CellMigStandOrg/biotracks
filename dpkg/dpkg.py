@@ -47,6 +47,7 @@ config_dict = lookAndReadConfigFile()
 top_level_dict = config_dict.get('TOP_LEVEL_INFO')
 track_dict = config_dict.get('TRACKING_DATA')
 joint_id = track_dict.get('object_id_cmso')
+link_id = track_dict.get('link_id_cmso')
 
 # the data package representation
 dp = createdp.create_dpkg(top_level_dict, dict_, directory, joint_id)
@@ -58,34 +59,38 @@ with open(directory + os.sep + 'dp.json', 'w') as f_json:
     f_json.write(dp.to_json())
 print(">>> json file written to directory")
 
-
-results_dict = pushtopandas.push_to_pandas(directory)
-# global aggregation of objects and links for further analytics
-aggregation = pd.merge(results_dict('links'), results_dict('objects'), how='outer', on=joint_id)
-# might add aggregation of tracks as well for further analytics
-
-
 # push to pandas
-trajectories_df = pushtopandas.push_to_pandas(directory)
-print(trajectories_df.head()), print(trajectories_df.tail())
-print('Number of rows: {}'.format(trajectories_df.shape[0]))
-print('Number of columns: {}'.format(trajectories_df.shape[1]))
+results_dict = pushtopandas.push_to_pandas(directory)
+print('Datapackage pushed to pandas.')
 
-x = track_dict.get('x_coord:CMSO')
-y = track_dict.get('y_coord:CMSO')
-t = track_dict.get('frame:CMSO')
+objects = results_dict['objects']
+links = results_dict['links']
+tracks = results_dict['tracks']
+
+print('Number of rows: {}'.format(objects.shape[0]))
+print('Number of columns: {}'.format(objects.shape[1]))
+
+# aggregation of objects and links for further analytics
+objects_links = pd.merge(links, objects, how='outer', on=joint_id)
+# aggregation of tracks as well for further analytics
+objects_links_tracks = pd.merge(objects_links, tracks, how='outer', on=link_id)
+
+
+x = track_dict.get('x_coord_cmso')
+y = track_dict.get('y_coord_cmso')
+frame = track_dict.get('frame_cmso')
 # basic visualizations
 try:
-    plot.prepareforplot(trajectories_df, x, y, t)
-    plot.plotXY(trajectories_df, joint_id, x, y)
+    plot.prepareforplot(objects_links_tracks, x, y, frame)
+    plot.plotXY(objects_links_tracks, link_id, x, y)
 
     print('Please wait, normalizing dataset....')
-    norm = plot.normalize(trajectories_df, joint_identifier, x, y)
+    norm = plot.normalize(objects_links_tracks, link_id, x, y)
 
     print('Dataset normaized to the origin of the coordinate system.')
-    plot.plotXY(norm, joint_identifier, x + 'norm', y + 'norm')
+    plot.plotXY(norm, link_id, x + 'norm', y + 'norm')
     print('Please wait, computing turning angles ....')
-    ta_norm = plot.compute_ta(norm, joint_identifier, x, y)
+    ta_norm = plot.compute_ta(norm, link_id, x, y)
     theta = ta_norm.ta[~np.isnan(ta_norm.ta)]
     theta_deg = theta.apply(math.degrees)
     theta = pd.DataFrame(theta)
