@@ -136,11 +136,12 @@ def read_trackMate(trackMate_file):
                 links_dict[LINK_ID].append(row['SPOT_TARGET_ID'])
                 # if source at row zero is not the same as target at row 1,
                 # flag an event
-                if index == 0 and (tmp.iloc[index].SPOT_TARGET_ID) != (tmp.iloc[index + 1].SPOT_SOURCE_ID):
+                if tmp.shape[0] > 1: # if number rows > 1
+                    if index == 0 and (tmp.iloc[index].SPOT_TARGET_ID) != (tmp.iloc[index + 1].SPOT_SOURCE_ID):
 
-                    LINK_ID += 1
-                    links_dict[LINK_ID] = []
-                    event = True
+                        LINK_ID += 1
+                        links_dict[LINK_ID] = []
+                        event = True
 
             elif row['EVENT'] == 'split':
                 event = True
