@@ -9,10 +9,12 @@ author_email = 'paola.masuzzo@ugent.be'
 author_institute = 'VIB'
 
 #### TRACKING DATA SECTION ########
-joint_identifier = 'Label'
-x_coord_field = 'XCordinate'
-y_coord_field = 'YCordinate'
-time_field = 'Label'
+x = 'yourX'
+y = 'yourY'
+z = 'yourZ'
+frame = 'yourFrame'
+object_id = 'yourObjectID'
+link_id = 'yourLinkID'
 
 config = configparser.ConfigParser()
 config['TOP_LEVEL_INFO'] = {'title': title,
@@ -21,10 +23,12 @@ config['TOP_LEVEL_INFO'] = {'title': title,
                             'author_email': author_email,
                             'author_institute': author_institute}
 
-config['TRACKING_DATA'] = {'joint_identifier': joint_identifier,
-                           'x_coord_field': x_coord_field,
-                           'y_coord_field': y_coord_field,
-                           'time_field': time_field}
+config['TRACKING_DATA'] = {'x_coord_cmso': x,
+                           'y_coord_cmso': y,
+                           'z_coord_cmso': z,
+                           'frame_cmso': frame,
+                           'object_id_cmso': object_id,
+                           'link_id_cmso': link_id}
 
 
 with open('cell_track_dpkg.ini', 'w') as configfile:
