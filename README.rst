@@ -37,7 +37,7 @@ This file should look something like this:
 
 .. code-block:: python
 
-  python dpkg.python your_tracking_file
+  python dpkg.py your_tracking_file
 
 this will create a **dp** directory containing:
 
