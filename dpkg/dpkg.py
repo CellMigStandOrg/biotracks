@@ -34,7 +34,7 @@ print(">>> tabular objects and links written to csv files in the dp folder")
 def lookAndReadConfigFile():
     """Looks for configuration file and tries to read it.
     """
-    for file_ in os.listdir(os.path.dirname(f)):
+    for file_ in os.listdir(os.path.dirname(os.path.abspath(f))):
         if file_.endswith(".ini"):
             print('Configuration file found: {}'.format(file_))
             config_dict = readConfigFile.readconfigfile(os.path.join(os.path.dirname(f), file_))
