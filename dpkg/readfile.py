@@ -24,7 +24,7 @@ def xls_to_csv(xls_file):
 
 
 def read_trackMate(trackMate_file):
-    """Utility function to read a TrackMate XML file and convert it to a plain csv."""
+    """Read a TrackMate XML file."""
 
     tree = ET.parse(trackMate_file)
     root = tree.getroot()
@@ -56,8 +56,6 @@ def read_trackMate(trackMate_file):
     name, extension = os.path.splitext(trackMate_file)
     objects_df = pd.DataFrame([[key, value[0], value[1], value[2]] for key, value in spots_dict.items()], columns=[
         "SPOT_ID", "FRAME", "POSITION_X", "POSITION_Y"])
-    # write the objects dataframe to a csv file
-    #objects_df.to_csv(name + '_CMSO_objects.csv', index=False)
 
     ################################
     ### dictionary for the edges ###
@@ -136,7 +134,7 @@ def read_trackMate(trackMate_file):
                 links_dict[LINK_ID].append(row['SPOT_TARGET_ID'])
                 # if source at row zero is not the same as target at row 1,
                 # flag an event
-                if tmp.shape[0] > 1: # if number rows > 1
+                if tmp.shape[0] > 1:  # if number rows > 1
                     if index == 0 and (tmp.iloc[index].SPOT_TARGET_ID) != (tmp.iloc[index + 1].SPOT_SOURCE_ID):
 
                         LINK_ID += 1
@@ -193,19 +191,45 @@ def read_trackMate(trackMate_file):
         for spot in value:
             links_df = links_df.append([[key, spot]], ignore_index=True)
     links_df.columns = ['LINK_ID', 'SPOT_ID']
-    #links_df.to_csv(name + '_CMSO_links.csv', index=False)
+    return (objects_df, links_df)
+
+
+def read_icy(icy_clean_file):
+    """Read a clean ICY file. File cleaned up with the clean_icy_file function."""
+    icy_df = pd.read_csv(icy_clean_file)
+    # dictionaries for objects and links
+    objects_dict = {}
+    links_dict = {}
+    for track in icy_df.trackID.unique():
+        tmp = icy_df[icy_df.trackID == track]
+        for index, row in tmp.iterrows():
+            objects_dict[index] = [row.t, row.x, row.y, row.z]
+
+        links_dict[int(track)] = tmp.index.values
+
+    # write dictionaries to dataframes
+    objects_df = pd.DataFrame([[key, value[0], value[1], value[2], value[3]] for key, value in objects_dict.items()], columns=
+                              ["OBJECT_ID", "t", "x", "y", "z"])
+    links_df = pd.DataFrame()
+    for key, value in links_dict.items():
+        for object_ in value:
+            links_df = links_df.append([[key, object_]], ignore_index=True)
+    links_df.columns = ['LINK_ID', 'OBJECT_ID']
 
     return (objects_df, links_df)
 
 
 def clean_icy_file(icy_file):
-    """Utility function to clean up a file generated with the ICY track_processor plugin."""
+    """Clean up a file generated with the ICY track_processor plugin."""
+    # tracks generated with: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
+    # tracks written to xls through:
+    # http://icy.bioimageanalysis.org/plugin/Track_Processor_export_track_to_Excel
     data = list(csv.reader(open(icy_file, "r")))
     name, extension = os.path.splitext(icy_file)
 
     with open(name + '_clean.csv', 'w', encoding='utf-8', newline='') as clean_file:
         writecsv = csv.writer(clean_file, quoting=csv.QUOTE_NONE)
-        writecsv.writerow(['trackID', 'time', 'x', 'y', 'z'])
+        writecsv.writerow(['trackID', 't', 'x', 'y', 'z'])
         for row in data:
             if len(row) > 0:
                 # this is a non empty line
@@ -228,10 +252,12 @@ def read_file(f):
     """
     # check for file extension
     if f.endswith('.xls'):
+        # first thing, try to convert it to a plain csv
         try:
             xls_to_csv(f)
             name, extension = os.path.splitext(f)
             f = name + '.csv'
+            print('XLS converted into csv...')
         except XLRDError:
             # copy the file and save it as csv
             import shutil
@@ -241,8 +267,35 @@ def read_file(f):
             print('Not an excel file.' + ' Copied and simply renamed to csv.')
 
     elif f.endswith('.xml'):
+        # right now XML associated only to TrackMate, might not be the case in
+        # the future
         (objects, links) = read_trackMate(f)
         print('Successfully parsed a TrackMate XML file...')
+
+    if f.endswith('.csv'):
+        # if the file is a simple csv, show it
+        # open the file and show a quick preview
+        print('>>> opening file: {}'.format(f))
+
+        with open(f, 'r') as reader:
+            for i in range(20):
+                if i == 0:
+                    print('>>> header of the file:')
+                elif i == 1:
+                    print('>>> rest of the file:')
+                line = reader.readline()
+                print(line)
+                if line.startswith(',,,'):
+                    # if we see ,,, as first line, the file needs to be cleaned
+                    # up
+                    print(
+                        'Trying to read an xls/csv generated with the ICY track_processor plugin;\nthe file will be cleaned up and reformatted.')
+                    clean_icy_file(f)
+                    name, extension = os.path.splitext(f)
+                    f = name + '_clean.csv'
+                    print('New file to work with: {}'.format(f))
+                    (objects, links) = read_icy(f)
+                    break
 
     # show objects and links previews
     print('>>> showing objects dataframe...')
@@ -250,4 +303,4 @@ def read_file(f):
     print('>>> showing links dataframe...')
     print(links.head())
 
-    return {'objects' : objects, 'links' : links}
+    return {'objects': objects, 'links': links}

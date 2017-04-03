@@ -60,7 +60,7 @@ with open(directory + os.sep + 'dp.json', 'w') as f_json:
 print(">>> json file written to directory")
 
 # push to pandas
-results_dict = pushtopandas.push_to_pandas(directory)
+results_dict = pushtopandas.push_to_pandas(directory, joint_id)
 print('Datapackage pushed to pandas.')
 
 objects = results_dict['objects']
@@ -75,22 +75,21 @@ objects_links = pd.merge(links, objects, how='outer', on=joint_id)
 # aggregation of tracks as well for further analytics
 objects_links_tracks = pd.merge(objects_links, tracks, how='outer', on=link_id)
 
-
 x = track_dict.get('x_coord_cmso')
 y = track_dict.get('y_coord_cmso')
 frame = track_dict.get('frame_cmso')
 # basic visualizations
 try:
     plot.prepareforplot(objects_links_tracks, x, y, frame)
-    plot.plotXY(objects_links_tracks, link_id, x, y)
+    plot.plotXY(objects_links_tracks, 'TRACK_ID', x, y)
 
     print('Please wait, normalizing dataset....')
-    norm = plot.normalize(objects_links_tracks, link_id, x, y)
+    norm = plot.normalize(objects_links_tracks, 'TRACK_ID', x, y)
 
     print('Dataset normaized to the origin of the coordinate system.')
-    plot.plotXY(norm, link_id, x + 'norm', y + 'norm')
+    plot.plotXY(norm, 'TRACK_ID', x + 'norm', y + 'norm')
     print('Please wait, computing turning angles ....')
-    ta_norm = plot.compute_ta(norm, link_id, x, y)
+    ta_norm = plot.compute_ta(norm, 'TRACK_ID', x, y)
     theta = ta_norm.ta[~np.isnan(ta_norm.ta)]
     theta_deg = theta.apply(math.degrees)
     theta = pd.DataFrame(theta)

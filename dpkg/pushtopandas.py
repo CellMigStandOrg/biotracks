@@ -3,11 +3,12 @@ import os
 import datapackage as dp
 import pandas as pd
 
-def push_to_pandas(directory):
+def push_to_pandas(directory, object_id_cmso):
     """Push the datapackage to a pandas storage.
 
     Keyword arguments:
     directory -- the directory to look into for the json descriptor
+    object_id_cmso -- the join_id specified in the .ini file
     """
     descr = directory + os.sep + 'dp.json'
     storage = dp.push_datapackage(descriptor=descr, backend='pandas')
@@ -28,7 +29,7 @@ def push_to_pandas(directory):
 
         tmp = links[links.LINK_ID == link]
         rest = links[(links.LINK_ID != link) & (~links.LINK_ID.isin(list_))]
-        ind = rest.SPOT_ID.isin(tmp.SPOT_ID)
+        ind = rest[object_id_cmso].isin(tmp[object_id_cmso])
         # no shared spots
         if not any(ind):
             # link not in dictionary
