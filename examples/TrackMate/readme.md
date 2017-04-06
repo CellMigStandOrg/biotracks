@@ -2,6 +2,8 @@
 
 The examples in the *TrackMate* directory were generated using the [Getting Started with TrackMate guide](http://imagej.net/Getting_started_with_TrackMate) on the official TrackMate homepage.
 
+TrackMate version used to produce these results: `TrackMate version="3.4.2"`
+
 ### The test dataset
 The [test dataset](http://imagej.net/Getting_started_with_TrackMate#The_test_image) used can be uploaded in ImageJ:
 
@@ -11,6 +13,9 @@ You can then open and run the TrackMate plugin selecting:
 
 `Plugins  ▶ Tracking  ▶ TrackMate `
 
+Alternatively, you can download the data from this [link](http://fiji.sc/samples/FakeTracks.tif).
+
+### Settings to reproduce the two examples
 To reproduce the two examples in this directory, you need to choose the following settings
 
 #### Example 1
