@@ -74,6 +74,7 @@ Track merging *not allowed*
 ------------
 
 All these settings are stored in the XML files, e.g.:
+
 ```xml
 
 	Starting tracking using Simple LAP tracker&#xD;
@@ -87,7 +88,9 @@ All these settings are stored in the XML files, e.g.:
     - no feature penalties&#xD;
 	Track splitting not allowed.&#xD;
 	Track merging not allowed.&#xD;
+  ```
 ------------
+
 
 #### Differences in the pipelines
 Look at the **plots** in the directory to have a quick view of the identified links (see this [page](https://cellmigstandorg.github.io/Tracks/) for the definition of a link).
