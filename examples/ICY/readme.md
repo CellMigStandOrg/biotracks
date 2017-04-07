@@ -1,6 +1,9 @@
 ## ICY examples
 
 The examples in the *ICY* directory were generated using the [ICY platform](http://icy.bioimageanalysis.org/).
+
+Version used: `Icy 1.9.0.1`.
+
 See the descriptions below for more information on each example.
 
 #### Example 1
@@ -25,4 +28,33 @@ The file will look like the [track_processor_ICY.xls](example_1/track_processor_
 The library will run a set of intermediate steps:
 - first create a plain CSV file from the Excel file: [`track_processor_ICY.csv`](example_1/track_processor_ICY.csv)
 - then, because the formatting of the resulting CSV is pretty strange, an extra reformatting is performed, writing the tracks to the [`track_processor_ICY_clean.CSV`](example_1/track_processor_ICY_clean.csv)
-- this last file is eventually used to create the  `data_package` format.
+- this last file is eventually used to create the `data_package` format.
+
+#### Example 2
+The dataset used in this example is the same used in the [TrackMate examples](../TrackMate), and it can be downloaded from this [link](http://fiji.sc/samples/FakeTracks.tif).
+The series of images (`FakeTracks.tif`) was analyzed through the ICY [Spot Detector](http://icy.bioimageanalysis.org/plugin/Spot_Detector) and [Spot Tracking](http://icy.bioimageanalysis.org/plugin/Spot_Tracking) plugins.
+
+##### The Spot Detector plugin
+To first identify objects of interest in the sequence of images, you need to run the *Spot Detector* plugin. Things to keep in mind when specifying settings for the detection step:
+
+- select **Detect bright spot over dark background** in the `Detector` tab
+- select **SizeFiltering** in the `Filtering tab` and set `min size = 10` and `max size = 30` (if you don't apply this filter, a lot of noise will be detected and then tracked)
+- select **Export to Swimming Pool** in the `Output` tab (this pool of detections will then used in the Spot Tracking step below)
+
+##### The Spot Tracking plugin
+Once the detection step is concluded, open the *Spot Tracking* plugin.
+Here, you need to select the pool of detections produced in the last step above you should have 184 detections).
+
+You can then `Estimate parameters` for an optimal *Multiple Hypothesis Tracking* method.
+
+Once you run the tracking, the TrackManager plugin starts, and, as for example_1 above, you can add the `processor to Export to Excel`.
+
+
+##### Running the data_package library
+As for example_1, the file [`track_processor_ICY.csv`](example_2/track_processor_ICY.csv) is first generated. The extra reformatting then writes the tracks to the [`track_processor_ICY_clean.CSV`](example_2/track_processor_ICY_clean.csv), which is eventually used by the library to create the `data_package` format.
+
+
+##### Comparing TrackMate to ICY
+The two algorithms used in TrackMate and ICY on the same `FakeTracks.tif` dataset clearly behave differently, as the first allows for gaps, merges and splits, while the second results in broken trajectories:
+
+![comparison_TM_ICY](comparison_TM_ICY.png)
