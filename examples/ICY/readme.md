@@ -23,6 +23,6 @@ The file will look like the [track_processor_ICY.xls](example_1/track_processor_
 
 ##### Running the data_package library
 The library will run a set of intermediate steps:
-- first create a plain CSV file from the Excel file: [`track_processor_ICY.csv`](track_processor_ICY.csv)
-- then, because the formatting of the resulting CSV is pretty strange, an extra reformatting is performed, writing the tracks to the [`track_processor_ICY_clean.CSV`](track_processor_ICY_clean.csv)
+- first create a plain CSV file from the Excel file: [`track_processor_ICY.csv`](example_1/track_processor_ICY.csv)
+- then, because the formatting of the resulting CSV is pretty strange, an extra reformatting is performed, writing the tracks to the [`track_processor_ICY_clean.CSV`](example_1/track_processor_ICY_clean.csv)
 - this last file is eventually used to create the  `data_package` format.
