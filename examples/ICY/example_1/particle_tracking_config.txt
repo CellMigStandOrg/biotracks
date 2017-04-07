@@ -1,0 +1,33 @@
+numBenchs 1
+saveDir /Users/me/Desktop/benchmark
+saveSequences true
+displaySequences true
+
+dim 2
+seqLength 25
+width 256
+height 256
+imageType double
+
+numParticleGroups 1
+numInitParticles 20
+numNewParticlesPerFrame 1.0
+pDisappear 0.05
+sigma_bMax 4.0
+sigma_bMin 2.0
+sigma_directedMin 1.0
+sigma_directedMax 2.0
+vMin 2.0
+vMax 4.0
+p_db 0.2
+p_bd 0.2
+iMin 20.0
+iMax 25.0
+
+PoissonNoise false
+backgroundPoisson 15.0
+gain 1.0
+
+GaussianNoise true
+meanGaussian 50.0
+stdGaussian 5.0
