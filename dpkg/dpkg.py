@@ -17,20 +17,6 @@ from configuration import readConfigFile
 # global variable - file name from the command line
 f = sys.argv[1]
 
-# read file - returns a dictionary with objects and links
-dict_ = readfile.read_file(f)
-# make directory for the csv and the dp representation
-wd = os.path.dirname(os.path.realpath(f))
-directory = wd + os.sep + 'dp'
-if not os.path.exists(directory):
-    os.makedirs(directory)
-# write the dataframes to csv
-for k, v in dict_.items():
-    v.to_csv(directory + os.sep + k + '.csv',
-             index=False, quoting=csv.QUOTE_NONE)
-print(">>> tabular objects and links written to csv files in the dp folder")
-
-
 def lookAndReadConfigFile():
     """Looks for configuration file and tries to read it.
     """
@@ -42,12 +28,24 @@ def lookAndReadConfigFile():
             break
     return config_dict
 
-
 config_dict = lookAndReadConfigFile()
 top_level_dict = config_dict.get('TOP_LEVEL_INFO')
 track_dict = config_dict.get('TRACKING_DATA')
 joint_id = track_dict.get('object_id_cmso')
 link_id = track_dict.get('link_id_cmso')
+
+# read file - returns a dictionary with objects and links
+dict_ = readfile.read_file(f, track_dict)
+# make directory for the csv and the dp representation
+wd = os.path.dirname(os.path.realpath(f))
+directory = wd + os.sep + 'dp'
+if not os.path.exists(directory):
+    os.makedirs(directory)
+# write the dataframes to csv
+for k, v in dict_.items():
+    v.to_csv(directory + os.sep + k + '.csv',
+             index=False, quoting=csv.QUOTE_NONE)
+print(">>> tabular objects and links written to csv files in the dp folder")
 
 # the data package representation
 dp = createdp.create_dpkg(top_level_dict, dict_, directory, joint_id)
@@ -81,6 +79,10 @@ frame = track_dict.get('frame_cmso')
 # basic visualizations
 try:
     plot.prepareforplot(objects_links_tracks, x, y, frame)
+    cum_df = plot.cum_displ(objects_links_tracks, link_id, x, y)
+    plot.plotXY(cum_df, 'TRACK_ID', x + 'cum', y + 'cum')
+
+    plot.plotXY(cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', x + 'cum', y + 'cum')
     plot.plotXY(objects_links_tracks, 'TRACK_ID', x, y)
 
     print('Please wait, normalizing dataset....')

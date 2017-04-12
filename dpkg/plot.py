@@ -68,6 +68,25 @@ def normalize(df, id_, x_coord, y_coord):
     df = pd.concat(list_)
     return df
 
+def cum_displ(df, id_, x_coord, y_coord):
+    list_ = []
+    x_cum = x_coord + 'cum'
+    y_cum = y_coord + 'cum'
+    for i in df[id_].unique():
+        tmp = df[df[id_] == i]
+        cumX = 0
+        cumY = 0
+        for index, row in tmp.iterrows():
+            current_x, current_y = row[x_coord], row[y_coord]
+            tmp_row = tmp.loc[[index]]
+
+            cumX+=current_x
+            cumY+=current_y
+            tmp_row[x_cum], tmp_row[y_cum] = cumX, cumY
+            list_.append(tmp_row)
+
+    df = pd.concat(list_)
+    return df
 
 def compute_ta(df, id_, x_coord, y_coord):
     """Compute turning angles.

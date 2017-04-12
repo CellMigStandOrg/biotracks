@@ -243,12 +243,80 @@ def clean_icy_file(icy_file):
                         writecsv.writerow(temp_data)
     clean_file.close()
 
+def read_cellprofiler(cp_file, track_dict):
+    # pandas dataframe
+    cp_df = pd.read_csv(cp_file)
+    # dictionary for the objects
+    objects_dict = {}
+    x = track_dict.get('x_coord_cmso')
+    y = track_dict.get('y_coord_cmso')
+    # parse the digits used for the tracking settings (e.g. 15)
+    digits = x.split('_')[2]
+    # sort the dataframe by [track_id, ImageNumber]
+    track_id = 'TrackObjects_Label_' + digits
+    cp_df = cp_df.sort_values([track_id, 'ImageNumber'])
 
-def read_file(f):
+    parent_obj_id = 'TrackObjects_ParentObjectNumber_' + digits
+    parent_img_id = 'TrackObjects_ParentImageNumber_' + digits
+    # create new Object identifiers
+    cp_df.reset_index(inplace = True)
+    for index, row in cp_df.iterrows():
+        objects_dict[index] = [row.ImageNumber, row[x], row[y]]
+
+    objects_df = pd.DataFrame([[key, value[0], value[1], value[2]] for key, value in objects_dict.items()], columns=
+                              ["ObjectID", "ImageNumber", x, y])
+
+    # dictionary for the links
+    links_dict = {}
+    # initialize id for the link
+    LINK_ID = 0
+
+    unique_parent_object = 0
+    for track in cp_df[track_id].unique():
+        tmp = cp_df[cp_df[track_id] == track]
+
+        for index, row in tmp.iterrows():
+
+            if index == 0:
+                links_dict[LINK_ID] = [index]
+            else:
+                parentImage = row[parent_img_id]
+                parentObject = row[parent_obj_id]
+
+                for j, r in tmp.iterrows():
+                    if (r.ObjectNumber == parentObject) and (r.ImageNumber == parentImage):
+                        unique_parent_object = j
+                        break
+
+                if row.ObjectNumber == row[parent_obj_id]:
+                    for key, val in links_dict.items():
+                        if unique_parent_object == val[-1]:
+                            links_dict[key].append(index)
+                            break
+
+                else:
+                    LINK_ID += 1
+                    links_dict[LINK_ID] = []
+                    if row[parent_obj_id]!= 0:
+                        links_dict[LINK_ID].append(unique_parent_object)
+                    links_dict[LINK_ID].append(index)
+
+    print(links_dict)
+    links_df = pd.DataFrame()
+    for key, value in links_dict.items():
+        for object_ in value:
+            links_df = links_df.append([[key, object_]])
+    links_df.columns = ['LINK_ID', 'ObjectID']
+
+    return (objects_df, links_df)
+
+
+def read_file(f, track_dict):
     """Takes file from command line.
 
     Keyword arguments:
     f -- the file (from command line)
+    track_dict -- only needed for some file formats!
     """
     # check for file extension
     if f.endswith('.xls'):
@@ -296,6 +364,10 @@ def read_file(f):
                     print('New file to work with: {}'.format(f))
                     (objects, links) = read_icy(f)
                     break
+
+        (objects, links) = read_cellprofiler(f, track_dict)
+        print('Successfully parsed a CellProfiler CSV file...')
+
 
     # show objects and links previews
     print('>>> showing objects dataframe...')
