@@ -43,4 +43,4 @@ Again, the module responsible for writing the data to file is the `ExportToSprea
 
 The [cp-output](example_2/cp-output) folder furthermore contains images produced by CellProfiler, e.g.:
 
-![example_image_embryo](example2/cp-output/DrosophilaEmbryo_GFPHistone_0007.png).
+![example_image_embryo](example_2/cp-output/DrosophilaEmbryo_GFPHistone_0007.png).
