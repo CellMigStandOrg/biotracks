@@ -9,16 +9,13 @@ Because of a buggy behavior that cannot be overcome with the latest release, the
 ##### Input data - raw sequence
 The data set used for this example is the same as the `FakeTracks.tif` used for the `TrackMate` and the `ICY` examples. The data can be downloaded from this [link](http://fiji.sc/samples/FakeTracks.tif), and it is also stored in the [input raw sequence](/example_1/input raw sequence) directory.
 
-An image looks like this:
-![raw_image_0](example_1/input_raw_sequence/FakeTracks0000.tif)
 
 ##### Input data - detected blobs
 Before running a tracking algorithm in CellProfiler, a `detection` algorithm was applied to the `input raw sequence`. To replicate this step, and produce the data in the [input blobs sequence](/example_1/input blobs sequence) directory, you can use the CellProfiler pipeline called [blob detection](pipelines/blob_detection_log.cppipe).
 
 Please be aware that this pipeline makes use of the [`Blob detection`](https://github.com/CellProfiler/CellProfiler/blob/master/cellprofiler/modules/blobdetection.py) module of CellProfiler, which might not be present in your version of the software.
 
-If you want to skip this step, you can proceed with the tracking algorithm as described in the [tracking pipeline](/pipelines/blobs_tracking.cppipe), using as input the detected blobs, like this:
-![blob_image_0](example_1/input_blobs_sequence/blobs_log/FakeTracks0000.tif)
+If you want to skip this step, you can proceed with the tracking algorithm as described in the [tracking pipeline](/pipelines/blobs_tracking.cppipe), using as input the detected blobs.
 
 The CellProfiler module that writes the data to file is the `ExportToSpreadsheet` one.
 
