@@ -1,20 +1,21 @@
 # import needed libraries
+import collections
+import csv
 import io
 import os
-import csv
+from collections import defaultdict
+
 import datapackage as dp
 import jsontableschema
 from jsontableschema import infer
-import collections
-from collections import defaultdict
 
 
-def create_dpkg(top_level_dict, ev_ob_dict, directory, joint_id):
+def create_dpkg(top_level_dict, dict_, directory, joint_id):
     """Create the datapackage representation.
 
     Keyword arguments:
     top_level_dict -- the dictionary with the TOP_LEVEL_INFO
-    ev_ob_dict -- the dictionary containing events and objects
+    dict_ -- the dictionary containing objects and links
     directory -- the directory
     joint_id -- the joint_identifier
     """
@@ -26,9 +27,9 @@ def create_dpkg(top_level_dict, ev_ob_dict, directory, joint_id):
 
     myDP.descriptor['resources'] = []
 
-    # the events block #
-    key = 'events'
-    events_table = ev_ob_dict.get(key)
+    # the objects block #
+    key = 'objects'
+    objects_table = dict_.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')
@@ -44,9 +45,9 @@ def create_dpkg(top_level_dict, ev_ob_dict, directory, joint_id):
          }
     )
 
-    # the objects block #
-    key = 'objects'
-    objects_table = ev_ob_dict.get(key)
+    # the links block #
+    key = 'links'
+    links_table = dict_.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')

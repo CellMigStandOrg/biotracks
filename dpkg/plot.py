@@ -1,10 +1,11 @@
 # import needed libraries
-import pylab as pl
+import math
+
 import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 import pandas as pd
-import math
+import pylab as pl
+import seaborn as sns
 
 
 def prepareforplot(df, x, y, t):
@@ -22,15 +23,15 @@ def prepareforplot(df, x, y, t):
     df.sort_values(time, axis=0, inplace=True)
 
 
-def plotXY(df, joint_id, x_coord, y_coord):
+def plotXY(df, id_, x_coord, y_coord):
     """Plot the raw trajectories.
 
     df -- the trajectories dataframe
-    joint_id -- the joint_identifier
+    id_ -- an identifier (for linear connections of objects)
     x_coord -- the x coordinate
     y_coord -- the y coordinate
     """
-    grid = sns.FacetGrid(df, hue=joint_id,
+    grid = sns.FacetGrid(df, hue=id_,
                          size=6, palette=sns.color_palette("Set1", 10))
     grid.fig.suptitle('XY trajectories')
     grid.map(plt.plot, x_coord, y_coord, marker=".", ms=0.3)
@@ -39,60 +40,79 @@ def plotXY(df, joint_id, x_coord, y_coord):
     sns.plt.show()
 
 
-def normalize(df, joint_id, x_coord, y_coord):
+def normalize(df, id_, x_coord, y_coord):
     """Normalize to the origin.
 
     df -- the trajectories dataframe
-    joint_id -- the joint_identifier
+    id_ -- an identifier (linkID or trackID)
     x_coord -- the x coordinate
     y_coord -- the y coordinate
     """
     list_ = []
     x_norm = x_coord + 'norm'
     y_norm = y_coord + 'norm'
-    for track in df[joint_id].unique():
-        temp_tracks = df[df[joint_id] == track]
+    df = df.dropna()
+    for i in df[id_].unique():
+        tmp = df[df[id_] == i]
         # the first x and y values
-        x0, y0 = temp_tracks.iloc[0][x_coord], temp_tracks.iloc[0][y_coord]
-        for index, row in temp_tracks.iterrows():
+        x0, y0 = tmp.iloc[0][x_coord], tmp.iloc[0][y_coord]
+        for index, row in tmp.iterrows():
             current_x, current_y = row[x_coord], row[y_coord]
             xn, yn = current_x - x0, current_y - y0
-
             # pass a list to .loc to be sure to get a dataframe: behavior is
             # not consistent!
-            temp_tracks_row = temp_tracks.loc[[index]]
-            temp_tracks_row[x_norm], temp_tracks_row[y_norm] = xn, yn
-            list_.append(temp_tracks_row)
+            tmp_row = tmp.loc[[index]]
+            tmp_row[x_norm], tmp_row[y_norm] = xn, yn
+            list_.append(tmp_row)
 
     df = pd.concat(list_)
     return df
 
+def cum_displ(df, id_, x_coord, y_coord):
+    list_ = []
+    x_cum = x_coord + 'cum'
+    y_cum = y_coord + 'cum'
+    for i in df[id_].unique():
+        tmp = df[df[id_] == i]
+        cumX = 0
+        cumY = 0
+        for index, row in tmp.iterrows():
+            current_x, current_y = row[x_coord], row[y_coord]
+            tmp_row = tmp.loc[[index]]
 
-def compute_ta(df, joint_id, x_coord, y_coord):
+            cumX+=current_x
+            cumY+=current_y
+            tmp_row[x_cum], tmp_row[y_cum] = cumX, cumY
+            list_.append(tmp_row)
+
+    df = pd.concat(list_)
+    return df
+
+def compute_ta(df, id_, x_coord, y_coord):
     """Compute turning angles.
 
     df -- the trajectories dataframe
-    joint_id -- the joint_identifier
+    id_ -- an identifier
     x_coord -- the x coordinate
     y_coord -- the y coordinate
     """
     list_ = []
-    for track in df[joint_id].unique():
-        temp = pd.DataFrame()
-        temp_tracks = df[df[joint_id] == track]
-        for i, row in enumerate(temp_tracks.iterrows()):
-            temp_tracks_row = temp_tracks.iloc[[i]]
+    for i in df[id_].unique():
+        tmp_df = pd.DataFrame()
+        tmp = df[df[id_] == i]
+        for i, row in enumerate(tmp.iterrows()):
+            temp_tracks_row = tmp.iloc[[i]]
             if i == 0:
                 previousX, previousY = row[1][x_coord], row[1][y_coord]
-                temp.loc[i, 'ta'] = float('NaN')
+                tmp_df.loc[i, 'ta'] = float('NaN')
             else:
                 delta_x, delta_y = row[1][x_coord] - \
                     previousX, row[1][y_coord] - previousY
                 previousX, previousY = row[1][x_coord], row[1][y_coord]
                 ta = math.atan2(delta_y, delta_x)
-                temp.loc[i, 'ta'] = ta
+                tmp_df.loc[i, 'ta'] = ta
 
-            list_.append(temp)
+            list_.append(tmp_df)
 
     df = pd.concat(list_)
     return df

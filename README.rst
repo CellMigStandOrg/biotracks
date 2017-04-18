@@ -1,7 +1,7 @@
 A datapackage representation of cell migration-derived tracking files.
 ******************************************************************************
 
-This Python project aims to create a simple Python package to produce data packages of cell migration tracking files. The final goal is to have a uniform, standardized way to represent these data, as in: http://frictionlessdata.io/ and http://frictionlessdata.io/data-packages/.
+This Python project aims to create a simple Python package to produce data packages of cell migration tracking files. The final goal is to have a uniform, standardized way to represent these data, as in `Frictionless Data <http://frictionlessdata.io/>`_ and `Data Packages <http://frictionlessdata.io/data-packages/>`_ .
 
 Steps to follow to use the package:
 
@@ -25,109 +25,98 @@ This file should look something like this:
   author_email = a valid email address
 
   [TRACKING_DATA]
-  x_coord_field = the field pointing to the x coordinate
-  y_coord_field = the field pointing to the y coordinate
-  time_field = the field pointing to the time information
-  joint_identifier = the track identifier joining objects and events
+  x_coord_cmso = the column name pointing to the x coordinate
+  y_coord_cmso = the column name pointing to the y coordinate
+  z_coord_cmso = the column name pointing to the z coordinate
+  frame_cmso = the column name pointing to the frame information
+  object_id_cmso = the object identifier
+  link_id_cmso = the link identifier
 
 
 +  **step 2** - run:
 
 .. code-block:: python
 
-  python dpkg.python your_tracking_file
+  python dpkg.py your_tracking_file
 
 this will create a **dp** directory containing:
 
-+ a *.csv* file for the **objects** (cells)
-+ a *.csv* file for the **events** (tracks)
-+ and finally a **dp.json** file containing the schemas of the two.
++ a *csv* file for the **objects** (i.e. cells)
++ a *csv* file for the **links** (i.e. a linear collection of objects)
++ and a **dp.json** file containing the *json* schemas of the two *csv* files.
 
 
 This last file will look something like this:
 
 .. code-block:: json
 
-    {
-          "author_institute": "Essen University",
-          "author_email": "paola.masuzzo@ugent.be",
-          "author": "paola masuzzo",
-          "resources": [{
-              "schema": {
-                  "fields": [{
-                      "name": "Track N",
-                      "type": "integer",
-                      "title": "",
-                      "format": "default",
-                      "description": "",
-                      "constraints": {
-                          "unique": true
-                      }
-                  }, {
-                      "type": "integer",
-                      "format": "default",
-                      "description": "",
-                      "name": "events_size",
-                      "title": ""
-                  }],
-                  "primaryKey": "Track N"
-              },
-              "name": "eventsTable",
-              "path": "events.csv"
-          }, {
-              "schema": {
-                  "fields": [{
-                      "type": "integer",
-                      "format": "default",
-                      "description": "",
-                      "name": "index",
-                      "title": ""
-                  }, {
-                      "type": "integer",
-                      "format": "default",
-                      "description": "",
-                      "name": "Line",
-                      "title": ""
-                  }, {
-                      "type": "integer",
-                      "format": "default",
-                      "description": "",
-                      "name": "Track N",
-                      "title": ""
-                  }, {
-                      "type": "integer",
-                      "format": "default",
-                      "description": "",
-                      "name": "Time Sample N",
-                      "title": ""
-                  }, {
-                      "type": "integer",
-                      "format": "default",
-                      "description": "",
-                      "name": "X",
-                      "title": ""
-                  }, {
-                      "type": "integer",
-                      "format": "default",
-                      "description": "",
-                      "name": "Y",
-                      "title": ""
-                  }],
-                  "foreignKeys": [{
-                      "reference": {
-                          "resource": "eventsTable",
-                          "datapackage": "",
-                          "fields": "Track N"
-                      },
-                      "fields": "Track N"
-                  }]
-              },
-              "name": "objectsTable",
-              "path": "objects.csv"
-          }],
-          "title": "example-cell-migration-tracking-file",
-          "name": "tracking-file-Essen"
-      }
+  {
+      "resources": [{
+          "name": "objectsTable",
+          "schema": {
+              "primaryKey": "SPOT_ID",
+              "fields": [{
+                  "name": "SPOT_ID",
+                  "title": "",
+                  "description": "",
+                  "constraints": {
+                      "unique": true
+                  },
+                  "type": "integer",
+                  "format": "default"
+              }, {
+                  "type": "integer",
+                  "name": "FRAME",
+                  "title": "",
+                  "format": "default",
+                  "description": ""
+              }, {
+                  "type": "number",
+                  "name": "POSITION_X",
+                  "title": "",
+                  "format": "default",
+                  "description": ""
+              }, {
+                  "type": "number",
+                  "name": "POSITION_Y",
+                  "title": "",
+                  "format": "default",
+                  "description": ""
+              }]
+          },
+          "path": "objects.csv"
+      }, {
+          "name": "linksTable",
+          "schema": {
+              "foreignKeys": [{
+                  "fields": "SPOT_ID",
+                  "reference": {
+                      "resource": "objectsTable",
+                      "fields": "SPOT_ID",
+                      "datapackage": ""
+                  }
+              }],
+              "fields": [{
+                  "type": "integer",
+                  "name": "LINK_ID",
+                  "title": "",
+                  "format": "default",
+                  "description": ""
+              }, {
+                  "type": "integer",
+                  "name": "SPOT_ID",
+                  "title": "",
+                  "format": "default",
+                  "description": ""
+              }]
+          },
+          "path": "links.csv"
+      }],
+      "name": "CMSO_tracks",
+      "title": "A CMSO data package representation of cell tracking data",
+      "author_email": "paola.masuzzo@email.com",
+      "author_institute": "VIB",
+      "author": "paola masuzzo"
+  }
 
-
-Then, the datapackage is pushed to a **pandas** dataframe. At the moment, this dataframe is used to create simple visualizations of tracks and turning angles.
+Then, the datapackage is pushed to a **pandas** dataframe. At the moment, this dataframe is used to create simple visualizations of links and turning angles.
