@@ -1,12 +1,8 @@
-# import needed libraries
-import collections
 import csv
 import io
 import os
-from collections import defaultdict
 
 import datapackage as dp
-import jsontableschema
 from jsontableschema import infer
 
 
@@ -29,7 +25,6 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
 
     # the objects block #
     key = 'objects'
-    objects_table = dict_.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')
@@ -47,7 +42,6 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
 
     # the links block #
     key = 'links'
-    links_table = dict_.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')
