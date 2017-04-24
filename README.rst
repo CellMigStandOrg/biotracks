@@ -5,15 +5,7 @@ This Python project aims to create a simple Python package to produce data packa
 
 Steps to follow to use the package:
 
-+ **step 1** - modify the parameters in the file *writeConfigFile.py*, go to the directory containing your tracking file and run:
-
-.. code-block:: python
-
-  python writeConfigFile.py
-
-this will create the *.ini configuration file*
-
-This file should look something like this:
++ **step 1** - create a `cell_track_dpkg.ini` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
 
 .. code-block::
 
