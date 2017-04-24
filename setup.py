@@ -45,5 +45,11 @@ setup(
     url='https://github.com/pcmasuzzo/cell_track_dpkg',
     license="BSD",
     cmdclass={"build_py": BuildPy},
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: BSD License",
+        "Topic :: Scientific/Engineering :: Bio-Informatics",
+        "Intended Audience :: Science/Research",
+    ],
     packages=find_packages(exclude=('tests', 'docs'))
 )
