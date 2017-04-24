@@ -11,6 +11,7 @@ import dpkg.createdp as createdp
 import dpkg.plot as plot
 import dpkg.pushtopandas as pushtopandas
 import dpkg.readfile as readfile
+import dpkg.names as names
 from dpkg.configuration import readConfigFile
 
 # global variable - file name from the command line
@@ -35,8 +36,8 @@ def lookAndReadConfigFile():
 config_dict = lookAndReadConfigFile()
 top_level_dict = config_dict.get('TOP_LEVEL_INFO')
 track_dict = config_dict.get('TRACKING_DATA')
-joint_id = track_dict.get('object_id_cmso')
-link_id = track_dict.get('link_id_cmso')
+joint_id = track_dict.get(names.OBJECT_NAME)
+link_id = track_dict.get(names.LINK_NAME)
 
 # read file - returns a dictionary with objects and links
 dict_ = readfile.read_file(f, track_dict)
@@ -77,9 +78,9 @@ objects_links = pd.merge(links, objects, how='outer', on=joint_id)
 # aggregation of tracks as well for further analytics
 objects_links_tracks = pd.merge(objects_links, tracks, how='outer', on=link_id)
 
-x = track_dict.get('x_coord_cmso')
-y = track_dict.get('y_coord_cmso')
-frame = track_dict.get('frame_cmso')
+x = track_dict.get(names.X_COORD_NAME)
+y = track_dict.get(names.Y_COORD_NAME)
+frame = track_dict.get(names.FRAME_NAME)
 # basic visualizations
 try:
     plot.prepareforplot(objects_links_tracks, x, y, frame)

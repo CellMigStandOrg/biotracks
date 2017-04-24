@@ -7,6 +7,8 @@ import pandas as pd
 import xlrd
 from xlrd import XLRDError
 
+import dpkg.names as names
+
 
 def xls_to_csv(xls_file):
     """Utility function to read Excel files."""
@@ -248,8 +250,8 @@ def read_cellprofiler(cp_file, track_dict):
     cp_df = pd.read_csv(cp_file)
     # dictionary for the objects
     objects_dict = {}
-    x = track_dict.get('x_coord_cmso')
-    y = track_dict.get('y_coord_cmso')
+    x = track_dict.get(names.X_COORD_NAME)
+    y = track_dict.get(names.Y_COORD_NAME)
     # parse the digits used for the tracking settings (e.g. 15)
     digits = x.split('_')[2]
     # sort the dataframe by [track_id, ImageNumber]
