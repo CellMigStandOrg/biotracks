@@ -4,7 +4,7 @@ import os
 
 import datapackage as dp
 from jsontableschema import infer
-import names
+import dpkg.names as names
 
 
 def create_dpkg(top_level_dict, dict_, directory, joint_id):

@@ -1,4 +1,3 @@
-import collections
 import csv
 import math
 import os
@@ -8,12 +7,11 @@ import json
 import numpy as np
 import pandas as pd
 
-import configuration
-import createdp
-import plot
-import pushtopandas
-import readfile
-from configuration import readConfigFile
+import dpkg.createdp as createdp
+import dpkg.plot as plot
+import dpkg.pushtopandas as pushtopandas
+import dpkg.readfile as readfile
+from dpkg.configuration import readConfigFile
 
 # global variable - file name from the command line
 f = sys.argv[1]
