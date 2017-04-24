@@ -52,7 +52,7 @@ This last file will look something like this:
 
   {
       "resources": [{
-          "name": "objectsTable",
+          "name": "objects_table",
           "schema": {
               "primaryKey": "SPOT_ID",
               "fields": [{
@@ -86,12 +86,12 @@ This last file will look something like this:
           },
           "path": "objects.csv"
       }, {
-          "name": "linksTable",
+          "name": "links_table",
           "schema": {
               "foreignKeys": [{
                   "fields": "SPOT_ID",
                   "reference": {
-                      "resource": "objectsTable",
+                      "resource": "objects_table",
                       "fields": "SPOT_ID",
                       "datapackage": ""
                   }

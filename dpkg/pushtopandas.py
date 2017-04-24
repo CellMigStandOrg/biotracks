@@ -14,8 +14,9 @@ def push_to_pandas(directory, object_id_cmso):
     storage = dp.push_datapackage(descriptor=descr, backend='pandas')
     print(storage.buckets)
 
-    objects = storage['objects___objectstable']
-    links = storage['links___linkstable']
+    # FIXME: the following is hardwired
+    objects = storage['objects___objects_table']
+    links = storage['links___links_table']
 
     objects.reset_index(inplace=True)
     print(objects.head()), print(links.head())

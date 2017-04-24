@@ -4,6 +4,7 @@ import os
 
 import datapackage as dp
 from jsontableschema import infer
+import names
 
 
 def create_dpkg(top_level_dict, dict_, directory, joint_id):
@@ -31,10 +32,9 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
         values = csv.reader(stream)
         schema = infer(headers, values, row_limit=50,
                        primary_key=joint_id)
-        referenced_resource = key + 'Table'
 
     myDP.descriptor['resources'].append(
-        {"name": key + 'Table',
+        {"name": names.OBJECTS_TABLE_NAME,
          "path": path,
          "schema": schema,
          }
@@ -51,13 +51,13 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
             "fields": joint_id,
             "reference": {
                 "datapackage": "",
-                "resource": referenced_resource,
+                "resource": names.OBJECTS_TABLE_NAME,
                 "fields": joint_id
             }
         }]
 
     myDP.descriptor['resources'].append(
-        {"name": key + 'Table',
+        {"name": names.LINKS_TABLE_NAME,
          "path": path,
          "schema": schema,
          }

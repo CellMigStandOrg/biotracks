@@ -5,7 +5,7 @@
     "name": "CMSO_tracks",
     "resources": [
         {
-            "name": "objectsTable",
+            "name": "objects_table",
             "path": "objects.csv",
             "schema": {
                 "fields": [
@@ -45,7 +45,7 @@
             }
         },
         {
-            "name": "linksTable",
+            "name": "links_table",
             "path": "links.csv",
             "schema": {
                 "fields": [
@@ -70,7 +70,7 @@
                         "reference": {
                             "datapackage": "",
                             "fields": "ObjectID",
-                            "resource": "objectsTable"
+                            "resource": "objects_table"
                         }
                     }
                 ]

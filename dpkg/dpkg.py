@@ -3,6 +3,7 @@ import csv
 import math
 import os
 import sys
+import json
 
 import numpy as np
 import pandas as pd
@@ -16,6 +17,11 @@ from configuration import readConfigFile
 
 # global variable - file name from the command line
 f = sys.argv[1]
+
+
+def to_json(dp):
+    return json.dumps(dp.to_dict(), indent=4, sort_keys=True)
+
 
 def lookAndReadConfigFile():
     """Looks for configuration file and tries to read it.
@@ -54,7 +60,7 @@ print('The json: {}'.format(dp.to_json()))
 
 # write the dp.json to file
 with open(directory + os.sep + 'dp.json', 'w') as f_json:
-    f_json.write(dp.to_json())
+    f_json.write(to_json(dp) + '\n')
 print(">>> json file written to directory")
 
 # push to pandas
