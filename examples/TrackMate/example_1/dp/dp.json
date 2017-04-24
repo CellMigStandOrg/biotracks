@@ -1,1 +1,81 @@
-{"author": "paola masuzzo", "title": "A CMSO data package representation of cell tracking data", "author_email": "paola.masuzzo@email.com", "name": "CMSO_tracks", "author_institute": "VIB", "resources": [{"name": "objectsTable", "path": "objects.csv", "schema": {"fields": [{"format": "default", "constraints": {"unique": true}, "type": "integer", "title": "", "name": "SPOT_ID", "description": ""}, {"name": "FRAME", "format": "default", "description": "", "type": "integer", "title": ""}, {"name": "POSITION_X", "format": "default", "description": "", "type": "number", "title": ""}, {"name": "POSITION_Y", "format": "default", "description": "", "type": "number", "title": ""}], "primaryKey": "SPOT_ID"}}, {"name": "linksTable", "path": "links.csv", "schema": {"fields": [{"name": "LINK_ID", "format": "default", "description": "", "type": "integer", "title": ""}, {"name": "SPOT_ID", "format": "default", "description": "", "type": "integer", "title": ""}], "foreignKeys": [{"fields": "SPOT_ID", "reference": {"fields": "SPOT_ID", "datapackage": "", "resource": "objectsTable"}}]}}]}
+{
+    "author": "paola masuzzo",
+    "author_email": "paola.masuzzo@email.com",
+    "author_institute": "VIB",
+    "name": "CMSO_tracks",
+    "resources": [
+        {
+            "name": "objectsTable",
+            "path": "objects.csv",
+            "schema": {
+                "fields": [
+                    {
+                        "constraints": {
+                            "unique": true
+                        },
+                        "description": "",
+                        "format": "default",
+                        "name": "SPOT_ID",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "FRAME",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "POSITION_X",
+                        "title": "",
+                        "type": "number"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "POSITION_Y",
+                        "title": "",
+                        "type": "number"
+                    }
+                ],
+                "primaryKey": "SPOT_ID"
+            }
+        },
+        {
+            "name": "linksTable",
+            "path": "links.csv",
+            "schema": {
+                "fields": [
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "LINK_ID",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "SPOT_ID",
+                        "title": "",
+                        "type": "integer"
+                    }
+                ],
+                "foreignKeys": [
+                    {
+                        "fields": "SPOT_ID",
+                        "reference": {
+                            "datapackage": "",
+                            "fields": "SPOT_ID",
+                            "resource": "objectsTable"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "title": "A CMSO data package representation of cell tracking data"
+}
