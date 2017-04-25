@@ -252,21 +252,23 @@ def read_cellprofiler(cp_file, track_dict):
     objects_dict = {}
     x = track_dict.get(names.X_COORD_NAME)
     y = track_dict.get(names.Y_COORD_NAME)
+    frame = track_dict.get(names.FRAME_NAME)
+    obj_id = track_dict.get(names.OBJECT_NAME)
     # parse the digits used for the tracking settings (e.g. 15)
     digits = x.split('_')[2]
-    # sort the dataframe by [track_id, ImageNumber]
+    # sort the dataframe by [track_id, frame]
     track_id = 'TrackObjects_Label_' + digits
-    cp_df = cp_df.sort_values([track_id, 'ImageNumber'])
+    cp_df = cp_df.sort_values([track_id, frame])
 
     parent_obj_id = 'TrackObjects_ParentObjectNumber_' + digits
     parent_img_id = 'TrackObjects_ParentImageNumber_' + digits
     # create new Object identifiers
     cp_df.reset_index(inplace = True)
     for index, row in cp_df.iterrows():
-        objects_dict[index] = [row.ImageNumber, row[x], row[y]]
+        objects_dict[index] = [row[frame], row[x], row[y]]
 
     objects_df = pd.DataFrame([[key, value[0], value[1], value[2]] for key, value in objects_dict.items()], columns=
-                              ["ObjectID", "ImageNumber", x, y])
+                              [obj_id, frame, x, y])
 
     # dictionary for the links
     links_dict = {}
@@ -286,7 +288,7 @@ def read_cellprofiler(cp_file, track_dict):
                 parentObject = row[parent_obj_id]
 
                 for j, r in tmp.iterrows():
-                    if (r.ObjectNumber == parentObject) and (r.ImageNumber == parentImage):
+                    if (r.ObjectNumber == parentObject) and (r[frame] == parentImage):
                         unique_parent_object = j
                         break
 
@@ -308,7 +310,7 @@ def read_cellprofiler(cp_file, track_dict):
     for key, value in links_dict.items():
         for object_ in value:
             links_df = links_df.append([[key, object_]])
-    links_df.columns = ['LINK_ID', 'ObjectID']
+    links_df.columns = [track_dict.get(names.LINK_NAME), obj_id]
 
     return (objects_df, links_df)
 
