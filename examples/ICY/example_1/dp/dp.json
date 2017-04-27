@@ -1,1 +1,88 @@
-{"author": "paola masuzzo", "author_institute": "VIB", "resources": [{"name": "objectsTable", "path": "objects.csv", "schema": {"primaryKey": "OBJECT_ID", "fields": [{"constraints": {"unique": true}, "description": "", "title": "", "name": "OBJECT_ID", "type": "integer", "format": "default"}, {"name": "t", "type": "number", "format": "default", "description": "", "title": ""}, {"name": "x", "type": "number", "format": "default", "description": "", "title": ""}, {"name": "y", "type": "number", "format": "default", "description": "", "title": ""}, {"name": "z", "type": "number", "format": "default", "description": "", "title": ""}]}}, {"name": "linksTable", "path": "links.csv", "schema": {"foreignKeys": [{"reference": {"datapackage": "", "resource": "objectsTable", "fields": "OBJECT_ID"}, "fields": "OBJECT_ID"}], "fields": [{"name": "LINK_ID", "type": "integer", "format": "default", "description": "", "title": ""}, {"name": "OBJECT_ID", "type": "integer", "format": "default", "description": "", "title": ""}]}}], "title": "A CMSO data package representation of cell tracking data", "name": "CMSO_tracks", "author_email": "paola.masuzzo@email.com"}
+{
+    "author": "paola masuzzo",
+    "author_email": "paola.masuzzo@email.com",
+    "author_institute": "VIB",
+    "name": "CMSO_tracks",
+    "resources": [
+        {
+            "name": "objects_table",
+            "path": "objects.csv",
+            "schema": {
+                "fields": [
+                    {
+                        "constraints": {
+                            "unique": true
+                        },
+                        "description": "",
+                        "format": "default",
+                        "name": "OBJECT_ID",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "t",
+                        "title": "",
+                        "type": "number"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "x",
+                        "title": "",
+                        "type": "number"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "y",
+                        "title": "",
+                        "type": "number"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "z",
+                        "title": "",
+                        "type": "number"
+                    }
+                ],
+                "primaryKey": "OBJECT_ID"
+            }
+        },
+        {
+            "name": "links_table",
+            "path": "links.csv",
+            "schema": {
+                "fields": [
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "LINK_ID",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "OBJECT_ID",
+                        "title": "",
+                        "type": "integer"
+                    }
+                ],
+                "foreignKeys": [
+                    {
+                        "fields": "OBJECT_ID",
+                        "reference": {
+                            "datapackage": "",
+                            "fields": "OBJECT_ID",
+                            "resource": "objects_table"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "title": "A CMSO data package representation of cell tracking data"
+}
