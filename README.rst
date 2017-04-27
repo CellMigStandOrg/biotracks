@@ -5,7 +5,13 @@ This Python project aims to create a simple Python package to produce data packa
 
 Steps to follow to use the package:
 
-+ **step 1** - create a `cell_track_dpkg.ini` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
++ **step 1** - Install the package (note it's Python 3 only at the moment):
+
+.. code-block::
+
+   python setup.py install
+
++ **step 2** - create a ``cell_track_dpkg.ini`` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
 
 .. code-block::
 
@@ -25,11 +31,11 @@ Steps to follow to use the package:
   link_id_cmso = the link identifier
 
 
-+  **step 2** - run:
++  **step 3** - move to the ``scripts`` directory and run:
 
 .. code-block:: python
 
-  python dpkg.py your_tracking_file
+  python create_dpkg.py your_tracking_file
 
 this will create a **dp** directory containing:
 
