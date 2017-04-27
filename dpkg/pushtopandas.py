@@ -1,7 +1,13 @@
-# import needed libraries
 import os
 import datapackage as dp
+try:
+    from datapackage.mappers import convert_path  # datapackage version 0.x
+except ImportError:
+    from datapackage.pushpull import _convert_path as convert_path
 import pandas as pd
+
+import dpkg.names as names
+
 
 def push_to_pandas(directory, object_id_cmso):
     """Push the datapackage to a pandas storage.
@@ -14,8 +20,8 @@ def push_to_pandas(directory, object_id_cmso):
     storage = dp.push_datapackage(descriptor=descr, backend='pandas')
     print(storage.buckets)
 
-    objects = storage['objects___objectstable']
-    links = storage['links___linkstable']
+    objects = storage[convert_path("objects.csv", names.OBJECTS_TABLE_NAME)]
+    links = storage[convert_path("links.csv", names.LINKS_TABLE_NAME)]
 
     objects.reset_index(inplace=True)
     print(objects.head()), print(links.head())

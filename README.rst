@@ -5,15 +5,13 @@ This Python project aims to create a simple Python package to produce data packa
 
 Steps to follow to use the package:
 
-+ **step 1** - modify the parameters in the file *writeConfigFile.py*, go to the directory containing your tracking file and run:
++ **step 1** - Install the package (note it's Python 3 only at the moment):
 
-.. code-block:: python
+.. code-block::
 
-  python writeConfigFile.py
+   python setup.py install
 
-this will create the *.ini configuration file*
-
-This file should look something like this:
++ **step 2** - create a ``cell_track_dpkg.ini`` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
 
 .. code-block::
 
@@ -33,11 +31,11 @@ This file should look something like this:
   link_id_cmso = the link identifier
 
 
-+  **step 2** - run:
++  **step 3** - move to the ``scripts`` directory and run:
 
 .. code-block:: python
 
-  python dpkg.py your_tracking_file
+  python create_dpkg.py your_tracking_file
 
 this will create a **dp** directory containing:
 
@@ -52,7 +50,7 @@ This last file will look something like this:
 
   {
       "resources": [{
-          "name": "objectsTable",
+          "name": "objects_table",
           "schema": {
               "primaryKey": "SPOT_ID",
               "fields": [{
@@ -86,12 +84,12 @@ This last file will look something like this:
           },
           "path": "objects.csv"
       }, {
-          "name": "linksTable",
+          "name": "links_table",
           "schema": {
               "foreignKeys": [{
                   "fields": "SPOT_ID",
                   "reference": {
-                      "resource": "objectsTable",
+                      "resource": "objects_table",
                       "fields": "SPOT_ID",
                       "datapackage": ""
                   }

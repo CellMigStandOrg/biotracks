@@ -1,13 +1,10 @@
-# import needed libraries
-import collections
 import csv
 import io
 import os
-from collections import defaultdict
 
 import datapackage as dp
-import jsontableschema
 from jsontableschema import infer
+import dpkg.names as names
 
 
 def create_dpkg(top_level_dict, dict_, directory, joint_id):
@@ -29,17 +26,15 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
 
     # the objects block #
     key = 'objects'
-    objects_table = dict_.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')
         values = csv.reader(stream)
         schema = infer(headers, values, row_limit=50,
                        primary_key=joint_id)
-        referenced_resource = key + 'Table'
 
     myDP.descriptor['resources'].append(
-        {"name": key + 'Table',
+        {"name": names.OBJECTS_TABLE_NAME,
          "path": path,
          "schema": schema,
          }
@@ -47,7 +42,6 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
 
     # the links block #
     key = 'links'
-    links_table = dict_.get(key)
     path = key + '.csv'
     with io.open(directory + os.sep + key + '.csv') as stream:
         headers = stream.readline().rstrip('\n').split(',')
@@ -57,13 +51,13 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
             "fields": joint_id,
             "reference": {
                 "datapackage": "",
-                "resource": referenced_resource,
+                "resource": names.OBJECTS_TABLE_NAME,
                 "fields": joint_id
             }
         }]
 
     myDP.descriptor['resources'].append(
-        {"name": key + 'Table',
+        {"name": names.LINKS_TABLE_NAME,
          "path": path,
          "schema": schema,
          }
