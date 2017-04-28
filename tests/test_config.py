@@ -7,7 +7,7 @@ import os
 def ini_file():
     directory = os.path.dirname(__file__)
     return os.path.join(
-        directory, "test_files", "cell_track_dpkg.ini")
+        directory, "test_files", "biotracks.ini")
 
 
 class TestReadConfigFile(object):

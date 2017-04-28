@@ -11,7 +11,7 @@ Steps to follow to use the package:
 
    python setup.py install
 
-+ **step 2** - create a ``cell_track_dpkg.ini`` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
++ **step 2** - create a ``biotracks.ini`` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
 
 .. code-block::
 
