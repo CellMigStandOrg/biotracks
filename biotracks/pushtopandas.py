@@ -6,7 +6,7 @@ except ImportError:
     from datapackage.pushpull import _convert_path as convert_path
 import pandas as pd
 
-import dpkg.names as names
+from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME
 
 
 def push_to_pandas(directory, object_id_cmso):
@@ -20,8 +20,8 @@ def push_to_pandas(directory, object_id_cmso):
     storage = dp.push_datapackage(descriptor=descr, backend='pandas')
     print(storage.buckets)
 
-    objects = storage[convert_path("objects.csv", names.OBJECTS_TABLE_NAME)]
-    links = storage[convert_path("links.csv", names.LINKS_TABLE_NAME)]
+    objects = storage[convert_path("objects.csv", OBJECTS_TABLE_NAME)]
+    links = storage[convert_path("links.csv", LINKS_TABLE_NAME)]
 
     objects.reset_index(inplace=True)
     print(objects.head()), print(links.head())

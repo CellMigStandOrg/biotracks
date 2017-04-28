@@ -4,7 +4,7 @@ import os
 
 import datapackage as dp
 from jsontableschema import infer
-import dpkg.names as names
+from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME
 
 
 def create_dpkg(top_level_dict, dict_, directory, joint_id):
@@ -34,7 +34,7 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
                        primary_key=joint_id)
 
     myDP.descriptor['resources'].append(
-        {"name": names.OBJECTS_TABLE_NAME,
+        {"name": OBJECTS_TABLE_NAME,
          "path": path,
          "schema": schema,
          }
@@ -51,13 +51,13 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
             "fields": joint_id,
             "reference": {
                 "datapackage": "",
-                "resource": names.OBJECTS_TABLE_NAME,
+                "resource": OBJECTS_TABLE_NAME,
                 "fields": joint_id
             }
         }]
 
     myDP.descriptor['resources'].append(
-        {"name": names.LINKS_TABLE_NAME,
+        {"name": LINKS_TABLE_NAME,
          "path": path,
          "schema": schema,
          }

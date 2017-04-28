@@ -6,7 +6,7 @@ from distutils.errors import DistutilsSetupError
 from distutils.dep_util import newer
 
 VERSION_FILE = "VERSION"
-PY_VERSION_FILE = "dpkg/version.py"
+PY_VERSION_FILE = "biotracks/version.py"
 
 
 def get_version_string():

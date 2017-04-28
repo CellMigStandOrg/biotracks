@@ -7,7 +7,9 @@ import pandas as pd
 import xlrd
 from xlrd import XLRDError
 
-import dpkg.names as names
+from .names import (
+    X_COORD_NAME, Y_COORD_NAME, FRAME_NAME, OBJECT_NAME, LINK_NAME
+)
 
 
 def xls_to_csv(xls_file):
@@ -250,10 +252,10 @@ def read_cellprofiler(cp_file, track_dict):
     cp_df = pd.read_csv(cp_file)
     # dictionary for the objects
     objects_dict = {}
-    x = track_dict.get(names.X_COORD_NAME)
-    y = track_dict.get(names.Y_COORD_NAME)
-    frame = track_dict.get(names.FRAME_NAME)
-    obj_id = track_dict.get(names.OBJECT_NAME)
+    x = track_dict.get(X_COORD_NAME)
+    y = track_dict.get(Y_COORD_NAME)
+    frame = track_dict.get(FRAME_NAME)
+    obj_id = track_dict.get(OBJECT_NAME)
     # parse the digits used for the tracking settings (e.g. 15)
     digits = x.split('_')[2]
     # sort the dataframe by [track_id, frame]
@@ -310,7 +312,7 @@ def read_cellprofiler(cp_file, track_dict):
     for key, value in links_dict.items():
         for object_ in value:
             links_df = links_df.append([[key, object_]])
-    links_df.columns = [track_dict.get(names.LINK_NAME), obj_id]
+    links_df.columns = [track_dict.get(LINK_NAME), obj_id]
 
     return (objects_df, links_df)
 

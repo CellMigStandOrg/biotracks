@@ -1,4 +1,4 @@
-from dpkg.configuration import readConfigFile
+from biotracks.configuration import readConfigFile
 from pytest import fixture
 import os
 
