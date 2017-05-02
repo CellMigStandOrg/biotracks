@@ -6,7 +6,7 @@ from distutils.errors import DistutilsSetupError
 from distutils.dep_util import newer
 
 VERSION_FILE = "VERSION"
-PY_VERSION_FILE = "dpkg/version.py"
+PY_VERSION_FILE = "biotracks/version.py"
 
 
 def get_version_string():
@@ -36,13 +36,13 @@ with open('README.rst') as f:
 
 
 setup(
-    name='cell_track_dpkg',
+    name='biotracks',
     version=get_version_string(),
     description='Data package representation for cell migration tracking data',
     long_description=readme,
     author='paola masuzzo',
     author_email='paola.masuzzo@ugent.be',
-    url='https://github.com/pcmasuzzo/cell_track_dpkg',
+    url='https://github.com/CellMigStandOrg/biotracks',
     license="BSD",
     cmdclass={"build_py": BuildPy},
     classifiers=[

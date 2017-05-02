@@ -7,12 +7,12 @@ import json
 import numpy as np
 import pandas as pd
 
-import dpkg.createdp as createdp
-import dpkg.plot as plot
-import dpkg.pushtopandas as pushtopandas
-import dpkg.readfile as readfile
-import dpkg.names as names
-from dpkg.configuration import readConfigFile
+import biotracks.createdp as createdp
+import biotracks.plot as plot
+import biotracks.pushtopandas as pushtopandas
+import biotracks.readfile as readfile
+import biotracks.names as names
+from biotracks.configuration import readConfigFile
 
 # global variable - file name from the command line
 f = sys.argv[1]

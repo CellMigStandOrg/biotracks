@@ -1,14 +1,11 @@
-.. sample documentation master file, created by
-   sphinx-quickstart.
+Data package representation for cell migration tracking data.
 
-Welcome to dpkg's documentation!
-==================================
 
-Contents:
+Contents
+========
 
 .. toctree::
    :maxdepth: 2
-
 
 
 Indices and tables
