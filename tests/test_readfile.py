@@ -2,9 +2,9 @@
 import os
 import sys
 # needed if using pytest (not needed for py.test)
-sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../dpkg")
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/../biotracks")
 
-from dpkg import readfile
+from biotracks import readfile
 from pytest import fixture
 import pandas as pd
 

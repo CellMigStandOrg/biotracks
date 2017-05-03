@@ -1,6 +1,12 @@
 A datapackage representation of cell migration-derived tracking files.
 ******************************************************************************
 
+.. image:: https://travis-ci.org/CellMigStandOrg/biotracks.svg?branch=master
+    :target: https://travis-ci.org/CellMigStandOrg/biotracks
+
+.. image:: https://badge.fury.io/py/biotracks.svg
+    :target: https://badge.fury.io/py/biotracks
+
 This Python project aims to create a simple Python package to produce data packages of cell migration tracking files. The final goal is to have a uniform, standardized way to represent these data, as in `Frictionless Data <http://frictionlessdata.io/>`_ and `Data Packages <http://frictionlessdata.io/data-packages/>`_ .
 
 Steps to follow to use the package:
@@ -11,7 +17,7 @@ Steps to follow to use the package:
 
    python setup.py install
 
-+ **step 2** - create a ``cell_track_dpkg.ini`` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
++ **step 2** - create a ``biotracks.ini`` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
 
 .. code-block::
 
