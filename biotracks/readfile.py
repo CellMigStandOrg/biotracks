@@ -369,10 +369,10 @@ def read_file(f, track_dict):
                     f = name + '_clean.csv'
                     print('New file to work with: {}'.format(f))
                     (objects, links) = read_icy(f)
-                    break
-
-        (objects, links) = read_cellprofiler(f, track_dict)
-        print('Successfully parsed a CellProfiler CSV file...')
+                else:
+                    (objects, links) = read_cellprofiler(f, track_dict)
+                    print('Successfully parsed a CellProfiler CSV file...')
+                break
 
 
     # show objects and links previews
