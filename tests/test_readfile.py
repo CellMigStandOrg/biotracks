@@ -5,26 +5,28 @@ from pytest import fixture
 import pandas as pd
 
 
-class Data(object):
-
-    def __init__(self):
-        self.read_file = None
-        directory = os.path.dirname(__file__)
-        self.f = os.path.join(directory, "test_files", "test_fake_tracks_tm.xml")
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(THIS_DIR, 'test_files')
+EXP_KEYS = frozenset(['objects', 'links'])
 
 
-@fixture(scope="class")
+@fixture()
 def data():
-    return Data()
+    def make_data(basename):
+        in_fn = os.path.join(DATA_DIR, basename)
+        d = readfile.read_file(in_fn, {})
+        assert set(d) == EXP_KEYS
+        for k in EXP_KEYS:
+            assert type(d[k]) is pd.DataFrame
+        return d
+    return make_data
 
 
 class TestReadFile(object):
 
-    def test_01_import_file(self, data):
-        exp_keys = set(['objects', 'links'])
-        assert os.path.exists(data.f)
-        data.read_file = readfile.read_file(data.f, {})
-        assert data.read_file is not None
-        assert set(data.read_file) == exp_keys
-        for k in exp_keys:
-            assert type(data.read_file[k]) is pd.DataFrame
+    def test_trackmate(self, data):
+        d = data('test_fake_tracks_tm.xml')
+        assert list(d['objects']) == [
+            'SPOT_ID', 'FRAME', 'POSITION_X', 'POSITION_Y'
+        ]
+        assert list(d['links']) == ['LINK_ID', 'SPOT_ID']
