@@ -29,8 +29,12 @@ class TestReadFile(object):
 
     def test_01_import_file(self, data):
         """Test routine read_file"""
+        exp_keys = set(['objects', 'links'])
         print("ReadFileTest:test_01_read_file")
         assert os.path.exists(data.f)
         data.read_file = readfile.read_file(data.f, {})
         print(data.read_file)
         assert data.read_file is not None
+        assert set(data.read_file) == exp_keys
+        for k in exp_keys:
+            assert type(data.read_file[k]) is pd.DataFrame
