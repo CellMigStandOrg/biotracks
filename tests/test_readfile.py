@@ -5,23 +5,7 @@ import pandas as pd
 import pytest
 
 from biotracks import readfile, names
-from .common import EXAMPLES_DIR, RELPATHS
-
-
-def get_obj_dict(df, obj_id):
-    d = {}
-    for _, series in df.iterrows():
-        k = series.pop(obj_id)
-        assert k not in d
-        d[k] = series.to_dict()
-    return d
-
-
-def get_link_dict(df, obj_id, link_id):
-    d = {}
-    for _, series in df.iterrows():
-        d.setdefault(series[link_id], set()).add(series[obj_id])
-    return d
+from .common import EXAMPLES_DIR, RELPATHS, get_obj_dict, get_link_dict
 
 
 @pytest.fixture()
