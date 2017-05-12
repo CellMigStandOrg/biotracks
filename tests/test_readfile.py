@@ -17,45 +17,64 @@ RELPATHS = {
 EXP_KEYS = frozenset(['objects', 'links'])
 
 
+def get_obj_dict(df, obj_id):
+    d = {}
+    for _, series in df.iterrows():
+        k = series.pop(obj_id)
+        assert k not in d
+        d[k] = series.to_dict()
+    return d
+
+
+def get_link_dict(df, obj_id, link_id):
+    d = {}
+    for _, series in df.iterrows():
+        d.setdefault(series[link_id], set()).add(series[obj_id])
+    return d
+
+
 @pytest.fixture()
 def data():
     def make_data(fmt):
-        in_fn = os.path.join(EXAMPLES_DIR, fmt, *RELPATHS[fmt])
-        conf_fn = os.path.join(
-            EXAMPLES_DIR, fmt, *RELPATHS[fmt][:-1], "biotracks.ini"
-        )
+        base_dir = os.path.join(EXAMPLES_DIR, fmt, *RELPATHS[fmt][:-1])
+        in_fn = os.path.join(base_dir, RELPATHS[fmt][-1])
+        conf_fn = os.path.join(base_dir, "biotracks.ini")
         conf = configparser.ConfigParser()
         conf.read(conf_fn)
         d = readfile.read_file(in_fn, conf['TRACKING_DATA'])
         assert set(d) == EXP_KEYS
         for k in EXP_KEYS:
             assert type(d[k]) is pd.DataFrame
-        return d, conf
+            d['%s_path' % k] = os.path.join(base_dir, 'dp', '%s.csv' % k)
+        d['conf'] = conf
+        return d
     return make_data
 
 
 class TestReadFile(object):
 
-    @pytest.mark.skip(reason="reader currently slow and overwrites repo files")
+    @pytest.mark.skip(reason="slow and overwrites repo files")
     def test_icy(self, data):
-        d, _ = data('ICY')
-        assert list(d['objects']) == ['OBJECT_ID', 't', 'x', 'y', 'z']
-        assert list(d['links']) == ['LINK_ID', 'OBJECT_ID']
+        d = data('ICY')
+        self.__check_dicts(d, 'OBJECT_ID', 'LINK_ID')
 
     def test_cellprofiler(self, data):
-        d, conf = data('CellProfiler')
-        td = conf['TRACKING_DATA']
-        assert list(d['objects']) == [
-            td[names.OBJECT_NAME],
-            td[names.FRAME_NAME],
-            td[names.X_COORD_NAME],
-            td[names.Y_COORD_NAME],
-        ]
-        assert list(d['links']) == [td[names.LINK_NAME], td[names.OBJECT_NAME]]
+        d = data('CellProfiler')
+        td = d['conf']['TRACKING_DATA']
+        self.__check_dicts(d, td[names.OBJECT_NAME], td[names.LINK_NAME])
 
     def test_trackmate(self, data):
-        d, _ = data('TrackMate')
-        assert list(d['objects']) == [
-            'SPOT_ID', 'FRAME', 'POSITION_X', 'POSITION_Y'
-        ]
-        assert list(d['links']) == ['LINK_ID', 'SPOT_ID']
+        d = data('TrackMate')
+        self.__check_dicts(d, 'SPOT_ID', 'LINK_ID')
+
+    def __check_dicts(self, d, obj_id, link_id):
+        exp_link_dict = get_link_dict(
+            pd.read_csv(d['links_path']), obj_id, link_id
+        )
+        link_dict = get_link_dict(d['links'], obj_id, link_id)
+        assert link_dict == exp_link_dict
+        exp_obj_dict = get_obj_dict(pd.read_csv(d['objects_path']), obj_id)
+        obj_dict = get_obj_dict(d['objects'], obj_id)
+        assert obj_dict.keys() == exp_obj_dict.keys()
+        for k, v in exp_obj_dict.items():
+            assert obj_dict[k] == pytest.approx(v)
