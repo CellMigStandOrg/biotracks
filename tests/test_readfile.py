@@ -5,16 +5,7 @@ import pandas as pd
 import pytest
 
 from biotracks import readfile, names
-
-
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-EXAMPLES_DIR = os.path.join(THIS_DIR, os.pardir, 'examples')
-RELPATHS = {
-    'ICY': ['example_1', 'track_processor_ICY.xls'],
-    'TrackMate': ['example_1', 'FakeTracks.xml'],
-    'CellProfiler': ['example_1', 'output', 'bloboverlap15_spots.csv'],
-}
-EXP_KEYS = frozenset(['objects', 'links'])
+from .common import EXAMPLES_DIR, RELPATHS
 
 
 def get_obj_dict(df, obj_id):
@@ -42,8 +33,8 @@ def data():
         conf = configparser.ConfigParser()
         conf.read(conf_fn)
         d = readfile.read_file(in_fn, conf['TRACKING_DATA'])
-        assert set(d) == EXP_KEYS
-        for k in EXP_KEYS:
+        assert set(d) == set(['objects', 'links'])
+        for k in list(d):
             assert type(d[k]) is pd.DataFrame
             d['%s_path' % k] = os.path.join(base_dir, 'dp', '%s.csv' % k)
         d['conf'] = conf
