@@ -1,8 +1,13 @@
+"""\
+Convert a tracking software output file to a datapackage representation.
+"""
+
 import csv
 import math
 import os
 import sys
 import json
+import argparse
 
 import numpy as np
 import pandas as pd
@@ -14,36 +19,44 @@ import biotracks.readfile as readfile
 import biotracks.names as names
 from biotracks.configuration import readConfigFile
 
-# global variable - file name from the command line
-f = sys.argv[1]
+
+DEFAULT_CONFIG_BASENAME = 'biotracks.ini'
+DEFAULT_OUTPUT_BASENAME = 'dp'
 
 
 def to_json(dp):
     return json.dumps(dp.to_dict(), indent=4, sort_keys=True)
 
 
-def lookAndReadConfigFile():
-    """Looks for configuration file and tries to read it.
-    """
-    for file_ in os.listdir(os.path.dirname(os.path.abspath(f))):
-        if file_.endswith(".ini"):
-            print('Configuration file found: {}'.format(file_))
-            config_dict = readConfigFile.readconfigfile(os.path.join(os.path.dirname(f), file_))
-            print('Configuration dictionary: {}.'.format(config_dict))
-            break
-    return config_dict
+def make_parser():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('track_fn', metavar="TRACKING_FILE")
+    parser.add_argument("-c", "--config", metavar="FILE", help="config file")
+    parser.add_argument("-o", "--out-dir", metavar="DIR", help="output dir")
+    return parser
 
-config_dict = lookAndReadConfigFile()
+
+parser = make_parser()
+args = parser.parse_args(sys.argv[1:])
+input_dir = os.path.dirname(os.path.abspath(args.track_fn))
+if args.out_dir is None:
+    args.out_dir = os.path.join(input_dir, DEFAULT_OUTPUT_BASENAME)
+if not args.config:
+    args.config = os.path.join(input_dir, DEFAULT_CONFIG_BASENAME)
+    print('Trying default config file location: "%s"' % args.config)
+if not os.path.isfile(args.config):
+    sys.exit('ERROR: configuration file "%s" not found' % args.config)
+config_dict = readConfigFile.readconfigfile(args.config)
+
 top_level_dict = config_dict.get('TOP_LEVEL_INFO')
 track_dict = config_dict.get('TRACKING_DATA')
 joint_id = track_dict.get(names.OBJECT_NAME)
 link_id = track_dict.get(names.LINK_NAME)
 
 # read file - returns a dictionary with objects and links
-dict_ = readfile.read_file(f, track_dict)
+dict_ = readfile.read_file(args.track_fn, track_dict)
 # make directory for the csv and the dp representation
-wd = os.path.dirname(os.path.realpath(f))
-directory = wd + os.sep + 'dp'
+directory = args.out_dir
 if not os.path.exists(directory):
     os.makedirs(directory)
 # write the dataframes to csv
