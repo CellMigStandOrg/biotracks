@@ -281,6 +281,7 @@ def read_file(f, track_dict):
     # check for file extension
     if f.endswith('.xls'):
         objects, links = read_icy(f)
+        print('Successfully parsed an ICY Excel file...')
 
     elif f.endswith('.xml'):
         # right now XML associated only to TrackMate, might not be the case in
