@@ -41,7 +41,7 @@ def main(argv):
     args = parser.parse_args(argv[1:])
     input_dir = os.path.dirname(os.path.abspath(args.track_fn))
     if args.out_dir is None:
-        args.out_dir = os.path.join(input_dir, DEFAULT_OUTPUT_BASENAME)
+        args.out_dir = DEFAULT_OUTPUT_BASENAME
     if not args.config:
         args.config = os.path.join(input_dir, DEFAULT_CONFIG_BASENAME)
         print('Trying default config file location: "%s"' % args.config)
