@@ -25,10 +25,12 @@ You will need to point to an Excel file (best if you use a `.xls` instead of `.x
 The file will look like the [track_processor_ICY.xls](example_1/track_processor_ICY.xls) file.
 
 ##### Running the data_package library
-The library will run a set of intermediate steps:
-- first create a plain CSV file from the Excel file: [`track_processor_ICY.csv`](example_1/track_processor_ICY.csv)
-- then, because the formatting of the resulting CSV is pretty strange, an extra reformatting is performed, writing the tracks to the [`track_processor_ICY_clean.CSV`](example_1/track_processor_ICY_clean.csv)
-- this last file is eventually used to create the `data_package` format.
+Move to the example directory and run the data package creation script:
+
+```
+cd examples/ICY/example_1
+python ../../../scripts/create_dpkg.py track_processor_ICY.xls
+```
 
 #### Example 2
 The dataset used in this example is the same used in the [TrackMate examples](../TrackMate), and it can be downloaded from this [link](http://fiji.sc/samples/FakeTracks.tif).
@@ -51,8 +53,12 @@ Once you run the tracking, the TrackManager plugin starts, and, as for example_1
 
 
 ##### Running the data_package library
-As for example_1, the file [`track_processor_ICY.csv`](example_2/track_processor_ICY.csv) is first generated. The extra reformatting then writes the tracks to the [`track_processor_ICY_clean.CSV`](example_2/track_processor_ICY_clean.csv), which is eventually used by the library to create the `data_package` format.
+As for the previous example, move to the example directory and run the data package creation script:
 
+```
+cd examples/ICY/example_2
+python ../../../scripts/create_dpkg.py track_processor_ICY.xls
+```
 
 ##### Comparing TrackMate to ICY
 The two algorithms used in TrackMate and ICY on the same `FakeTracks.tif` dataset clearly behave differently, as the first allows for gaps, merges and splits, while the second results in broken trajectories:

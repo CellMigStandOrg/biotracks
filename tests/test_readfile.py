@@ -28,7 +28,6 @@ def data():
 
 class TestReadFile(object):
 
-    @pytest.mark.skip(reason="slow and overwrites repo files")
     def test_icy(self, data):
         d = data('ICY')
         self.__check_dicts(d, 'OBJECT_ID', 'LINK_ID')

@@ -5,26 +5,10 @@ import xml.etree.ElementTree as ET
 
 import pandas as pd
 import xlrd
-from xlrd import XLRDError
 
 from .names import (
     X_COORD_NAME, Y_COORD_NAME, FRAME_NAME, OBJECT_NAME, LINK_NAME
 )
-
-
-def xls_to_csv(xls_file):
-    """Utility function to read Excel files."""
-
-    x = xlrd.open_workbook(xls_file)
-    x1 = x.sheet_by_index(0)
-    name, extension = os.path.splitext(xls_file)
-
-    with open(name + '.csv', 'w', encoding='utf-8') as csv_file:
-        writecsv = csv.writer(csv_file, quoting=csv.QUOTE_NONE)
-        for rownum in range(x1.nrows):
-            writecsv.writerow(x1.row_values(rownum))
-
-    csv_file.close()
 
 
 def read_trackMate(trackMate_file):
@@ -198,54 +182,24 @@ def read_trackMate(trackMate_file):
     return (objects_df, links_df)
 
 
-def read_icy(icy_clean_file):
-    """Read a clean ICY file. File cleaned up with the clean_icy_file function."""
-    icy_df = pd.read_csv(icy_clean_file)
-    # dictionaries for objects and links
-    objects_dict = {}
-    links_dict = {}
-    for track in icy_df.trackID.unique():
-        tmp = icy_df[icy_df.trackID == track]
-        for index, row in tmp.iterrows():
-            objects_dict[index] = [row.t, row.x, row.y, row.z]
+def read_icy(xls_file):
+    book = xlrd.open_workbook(xls_file)
+    sheet = book.sheet_by_index(0)
+    track = None
+    obj = 0
+    objects, links = [], []
+    for i in range(sheet.nrows):
+        values = sheet.row_values(i)
+        if values[0]:  # track number line
+            track = int(values[1])
+        elif type(values[2]) is float:  # data line
+            objects.append([obj] + values[2:6])
+            links.append([track, obj])
+            obj += 1
+    obj_df = pd.DataFrame(objects, columns=['OBJECT_ID', 't', 'x', 'y', 'z'])
+    links_df = pd.DataFrame(links, columns=['LINK_ID', 'OBJECT_ID'])
+    return obj_df, links_df
 
-        links_dict[int(track)] = tmp.index.values
-
-    # write dictionaries to dataframes
-    objects_df = pd.DataFrame([[key, value[0], value[1], value[2], value[3]] for key, value in objects_dict.items()], columns=
-                              ["OBJECT_ID", "t", "x", "y", "z"])
-    links_df = pd.DataFrame()
-    for key, value in links_dict.items():
-        for object_ in value:
-            links_df = links_df.append([[key, object_]], ignore_index=True)
-    links_df.columns = ['LINK_ID', 'OBJECT_ID']
-
-    return (objects_df, links_df)
-
-
-def clean_icy_file(icy_file):
-    """Clean up a file generated with the ICY track_processor plugin."""
-    # tracks generated with: http://icy.bioimageanalysis.org/plugin/Spot_Tracking
-    # tracks written to xls through:
-    # http://icy.bioimageanalysis.org/plugin/Track_Processor_export_track_to_Excel
-    data = list(csv.reader(open(icy_file, "r")))
-    name, extension = os.path.splitext(icy_file)
-
-    with open(name + '_clean.csv', 'w', encoding='utf-8', newline='') as clean_file:
-        writecsv = csv.writer(clean_file, quoting=csv.QUOTE_NONE)
-        writecsv.writerow(['trackID', 't', 'x', 'y', 'z'])
-        for row in data:
-            if len(row) > 0:
-                # this is a non empty line
-                if row[0].startswith('track'):
-                    # this is a track line, trackID is second element
-                    trackID = row[1]
-                else:
-                    if row[2] != 't' and row[2] != '':
-                        temp_data = [float(trackID), float(row[2]), float(
-                            row[3]), float(row[4]), float(row[5])]
-                        writecsv.writerow(temp_data)
-    clean_file.close()
 
 def read_cellprofiler(cp_file, track_dict):
     # pandas dataframe
@@ -326,19 +280,8 @@ def read_file(f, track_dict):
     """
     # check for file extension
     if f.endswith('.xls'):
-        # first thing, try to convert it to a plain csv
-        try:
-            xls_to_csv(f)
-            name, extension = os.path.splitext(f)
-            f = name + '.csv'
-            print('XLS converted into csv...')
-        except XLRDError:
-            # copy the file and save it as csv
-            import shutil
-            name, extension = os.path.splitext(f)
-            shutil.copyfile(f, name + '.csv')
-            f = name + '.csv'
-            print('Not an excel file.' + ' Copied and simply renamed to csv.')
+        objects, links = read_icy(f)
+        print('Successfully parsed an ICY Excel file...')
 
     elif f.endswith('.xml'):
         # right now XML associated only to TrackMate, might not be the case in
@@ -359,19 +302,8 @@ def read_file(f, track_dict):
                     print('>>> rest of the file:')
                 line = reader.readline()
                 print(line)
-                if line.startswith(',,,'):
-                    # if we see ,,, as first line, the file needs to be cleaned
-                    # up
-                    print(
-                        'Trying to read an xls/csv generated with the ICY track_processor plugin;\nthe file will be cleaned up and reformatted.')
-                    clean_icy_file(f)
-                    name, extension = os.path.splitext(f)
-                    f = name + '_clean.csv'
-                    print('New file to work with: {}'.format(f))
-                    (objects, links) = read_icy(f)
-                else:
-                    (objects, links) = read_cellprofiler(f, track_dict)
-                    print('Successfully parsed a CellProfiler CSV file...')
+                objects, links = read_cellprofiler(f, track_dict)
+                print('Successfully parsed a CellProfiler CSV file...')
                 break
 
 
