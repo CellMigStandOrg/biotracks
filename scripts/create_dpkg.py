@@ -7,6 +7,7 @@ import math
 import os
 import sys
 import json
+import configparser
 import argparse
 
 import numpy as np
@@ -17,7 +18,6 @@ import biotracks.plot as plot
 import biotracks.pushtopandas as pushtopandas
 import biotracks.readfile as readfile
 import biotracks.names as names
-from biotracks.configuration import readConfigFile
 
 
 DEFAULT_CONFIG_BASENAME = 'biotracks.ini'
@@ -47,10 +47,11 @@ def main(argv):
         print('Trying default config file location: "%s"' % args.config)
     if not os.path.isfile(args.config):
         sys.exit('ERROR: configuration file "%s" not found' % args.config)
-    config_dict = readConfigFile.readconfigfile(args.config)
+    conf = configparser.ConfigParser()
+    conf.read(args.config)
 
-    top_level_dict = config_dict.get('TOP_LEVEL_INFO')
-    track_dict = config_dict.get('TRACKING_DATA')
+    top_level_dict = conf['TOP_LEVEL_INFO']
+    track_dict = conf['TRACKING_DATA']
     joint_id = track_dict.get(names.OBJECT_NAME)
     link_id = track_dict.get(names.LINK_NAME)
 
