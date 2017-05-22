@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import xlrd
 
-from .utils import NullLogger
+from .utils import NullLogger, get_logger
 from .names import (
     X_COORD_NAME, Y_COORD_NAME, FRAME_NAME, OBJECT_NAME, LINK_NAME
 )
@@ -11,10 +11,15 @@ from .names import (
 
 class TracksReader(object):
 
-    def __init__(self, fname, conf=None, logger=None):
+    def __init__(self, fname, conf=None, log_level=None):
         self.fname = fname
         self.conf = conf or {}
-        self.logger = logger or NullLogger()
+        if log_level is None:
+            self.logger = NullLogger()
+        else:
+            reader_name = self.__class__.__name__
+            self.logger = get_logger(reader_name, level=log_level)
+            self.logger.info('%s Reading "%s"', reader_name, fname)
 
 
 class TrackMateReader(TracksReader):
@@ -264,18 +269,13 @@ class IcyReader(TracksReader):
         return obj_df, links_df
 
 
-def read_file(fname, track_dict, logger=None):
-    if logger is None:
-        logger = NullLogger()
+def read_file(fname, track_dict, log_level=None):
     if fname.endswith('.xls'):
-        logger.info('Reading %s as an ICY Excel file', fname)
-        objects, links = IcyReader(fname, logger=logger).read()
+        objects, links = IcyReader(fname, log_level=log_level).read()
     elif fname.endswith('.xml'):
-        logger.info('Reading %s as a TrackMate XML file', fname)
-        objects, links = TrackMateReader(fname, logger=logger).read()
+        objects, links = TrackMateReader(fname, log_level=log_level).read()
     elif fname.endswith('.csv'):
-        logger.info('Reading %s as a CellProfiler CSV file', fname)
         objects, links = CellProfilerReader(
-            fname, conf=track_dict, logger=logger
+            fname, conf=track_dict, log_level=log_level
         ).read()
     return {'objects': objects, 'links': links}

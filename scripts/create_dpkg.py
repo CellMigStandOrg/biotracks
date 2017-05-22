@@ -66,7 +66,9 @@ def main(argv):
     link_id = track_dict.get(names.LINK_NAME)
 
     # read file - returns a dictionary with objects and links
-    dict_ = readfile.read_file(args.track_fn, track_dict, logger=logger)
+    dict_ = readfile.read_file(
+        args.track_fn, track_dict, log_level=args.log_level
+    )
     # make directory for the csv and the dp representation
     directory = args.out_dir
     if not os.path.exists(directory):
@@ -84,7 +86,7 @@ def main(argv):
 
     # push to pandas
     results_dict = pushtopandas.push_to_pandas(
-        directory, joint_id, logger=logger
+        directory, joint_id, log_level=args.log_level
     )
     logger.debug('Datapackage pushed to pandas')
 
