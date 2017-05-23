@@ -1,4 +1,5 @@
-# -*- coding: utf-8 -*-
+# #%L
+# #L%
 
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py as BaseBuildPy

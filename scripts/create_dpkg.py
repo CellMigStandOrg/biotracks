@@ -1,3 +1,6 @@
+# #%L
+# #L%
+
 """\
 Convert a tracking software output file to a datapackage representation.
 """

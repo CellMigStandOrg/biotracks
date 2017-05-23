@@ -1,3 +1,6 @@
+# #%L
+# #L%
+
 import os
 import datapackage as dp
 try:
