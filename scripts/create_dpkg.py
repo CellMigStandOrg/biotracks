@@ -117,11 +117,13 @@ def main(argv):
             cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', x + 'cum', y + 'cum'
         )
         plot.plotXY(objects_links_tracks, 'TRACK_ID', x, y)
+        plot.plotXY(objects_links_tracks, 'LINK_ID', x, y)
         logger.info(
             'normalizing dataset to the origin of the coordinate system...'
         )
         norm = plot.normalize(objects_links_tracks, 'TRACK_ID', x, y)
         plot.plotXY(norm, 'TRACK_ID', x + 'norm', y + 'norm')
+        plot.plotXY(norm, 'LINK_ID', x + 'norm', y + 'norm')
         logger.info('computing turning angles...')
         ta_norm = plot.compute_ta(norm, 'TRACK_ID', x, y)
         theta = ta_norm.ta[~np.isnan(ta_norm.ta)]
