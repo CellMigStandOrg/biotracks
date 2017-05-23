@@ -14,6 +14,18 @@ LOG_LEVELS = frozenset([
 LOG_FORMAT = '%(asctime)s %(levelname)s: [%(name)s] %(message)s'
 
 
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+
+
+class NullLogger(logging.Logger):
+    def __init__(self):
+        logging.Logger.__init__(self, "null")
+        self.propagate = 0
+        self.handlers = [NullHandler()]
+
+
 def get_log_level(s):
     try:
         return int(s)
@@ -25,7 +37,9 @@ def get_log_level(s):
             raise ValueError('%r is not a valid log level' % (s,))
 
 
-def get_logger(name, level='INFO', f=None, mode='a'):
+def get_logger(name, level=None, f=None, mode='a'):
+    if level is None:
+        return NullLogger()
     logger = logging.getLogger(name)
     logger.setLevel(get_log_level(level))
     if isinstance(f, str):
@@ -35,15 +49,3 @@ def get_logger(name, level='INFO', f=None, mode='a'):
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
     logger.addHandler(handler)
     return logger
-
-
-class NullHandler(logging.Handler):
-    def emit(self, record):
-        pass
-
-
-class NullLogger(logging.Logger):
-    def __init__(self):
-        logging.Logger.__init__(self, "null")
-        self.propagate = 0
-        self.handlers = [NullHandler()]

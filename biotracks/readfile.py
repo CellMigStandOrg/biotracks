@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import pandas as pd
 import xlrd
 
-from .utils import NullLogger, get_logger
+from .utils import get_logger
 from .names import (
     X_COORD_NAME, Y_COORD_NAME, FRAME_NAME, OBJECT_NAME, LINK_NAME
 )
@@ -14,12 +14,9 @@ class TracksReader(object):
     def __init__(self, fname, conf=None, log_level=None):
         self.fname = fname
         self.conf = conf or {}
-        if log_level is None:
-            self.logger = NullLogger()
-        else:
-            reader_name = self.__class__.__name__
-            self.logger = get_logger(reader_name, level=log_level)
-            self.logger.info('%s Reading "%s"', reader_name, fname)
+        reader_name = self.__class__.__name__
+        self.logger = get_logger(reader_name, level=log_level)
+        self.logger.info('%s Reading "%s"', reader_name, fname)
 
 
 class TrackMateReader(TracksReader):
