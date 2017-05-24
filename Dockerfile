@@ -4,7 +4,7 @@ FROM continuumio/miniconda3
 #  docker run -i -t -p 8888:8888 continuumio/anaconda3 /bin/bash -c "/opt/conda/bin/conda install jupyter -y --quiet && mkdir /opt/notebooks && /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser"
 
 
-RUN apt-get install -y build-essential
+RUN apt-get update && apt-get install -y build-essential
 RUN pip install --upgrade pip
 RUN conda install -y matplotlib
 RUN pip install datapackage jsontableschema jsontableschema-pandas

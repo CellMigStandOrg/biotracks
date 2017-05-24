@@ -3,10 +3,10 @@ Convert a tracking software output file to a datapackage representation.
 """
 
 import csv
-import math
 import os
 import sys
 import json
+import configparser
 import argparse
 
 import numpy as np
@@ -17,7 +17,7 @@ import biotracks.plot as plot
 import biotracks.pushtopandas as pushtopandas
 import biotracks.readfile as readfile
 import biotracks.names as names
-from biotracks.configuration import readConfigFile
+from biotracks.utils import get_log_level, get_logger
 
 
 DEFAULT_CONFIG_BASENAME = 'biotracks.ini'
@@ -28,34 +28,47 @@ def to_json(dp):
     return json.dumps(dp.to_dict(), indent=4, sort_keys=True)
 
 
+def log_level(s):
+    try:
+        return get_log_level(s)
+    except ValueError as e:
+        raise argparse.ArgumentTypeError(e.message)
+
+
 def make_parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('track_fn', metavar="TRACKING_FILE")
     parser.add_argument("-c", "--config", metavar="FILE", help="config file")
     parser.add_argument("-o", "--out-dir", metavar="DIR", help="output dir")
+    parser.add_argument('--log-level', metavar='LEVEL', type=log_level,
+                        default='INFO', help='logging level')
     return parser
 
 
 def main(argv):
     parser = make_parser()
     args = parser.parse_args(argv[1:])
+    logger = get_logger('create_dpkg', level=args.log_level, f=sys.stdout)
     input_dir = os.path.dirname(os.path.abspath(args.track_fn))
     if args.out_dir is None:
         args.out_dir = DEFAULT_OUTPUT_BASENAME
     if not args.config:
         args.config = os.path.join(input_dir, DEFAULT_CONFIG_BASENAME)
-        print('Trying default config file location: "%s"' % args.config)
+        logger.info('Trying default config file location: "%s"', args.config)
     if not os.path.isfile(args.config):
         sys.exit('ERROR: configuration file "%s" not found' % args.config)
-    config_dict = readConfigFile.readconfigfile(args.config)
+    conf = configparser.ConfigParser()
+    conf.read(args.config)
 
-    top_level_dict = config_dict.get('TOP_LEVEL_INFO')
-    track_dict = config_dict.get('TRACKING_DATA')
+    top_level_dict = conf['TOP_LEVEL_INFO']
+    track_dict = conf['TRACKING_DATA']
     joint_id = track_dict.get(names.OBJECT_NAME)
     link_id = track_dict.get(names.LINK_NAME)
 
     # read file - returns a dictionary with objects and links
-    dict_ = readfile.read_file(args.track_fn, track_dict)
+    dict_ = readfile.read_file(
+        args.track_fn, track_dict, log_level=args.log_level
+    )
     # make directory for the csv and the dp representation
     directory = args.out_dir
     if not os.path.exists(directory):
@@ -64,33 +77,32 @@ def main(argv):
     for k, v in dict_.items():
         v.to_csv(directory + os.sep + k + '.csv',
                  index=False, quoting=csv.QUOTE_NONE)
-    print(">>> tabular objects and links written to csv files in the dp folder")
-
-    # the data package representation
+    logger.info('tabular files written to "%s"', directory)
     dp = createdp.create_dpkg(top_level_dict, dict_, directory, joint_id)
-    print('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-    print('The json: {}'.format(dp.to_json()))
-
-    # write the dp.json to file
+    # write the data package representation
     with open(directory + os.sep + 'dp.json', 'w') as f_json:
         f_json.write(to_json(dp) + '\n')
-    print(">>> json file written to directory")
+    logger.info('json file written to "%s"', directory)
 
     # push to pandas
-    results_dict = pushtopandas.push_to_pandas(directory, joint_id)
-    print('Datapackage pushed to pandas.')
+    results_dict = pushtopandas.push_to_pandas(
+        directory, joint_id, log_level=args.log_level
+    )
+    logger.debug('Datapackage pushed to pandas')
 
     objects = results_dict['objects']
     links = results_dict['links']
     tracks = results_dict['tracks']
 
-    print('Number of rows: {}'.format(objects.shape[0]))
-    print('Number of columns: {}'.format(objects.shape[1]))
+    logger.debug('Number of rows: %d', objects.shape[0])
+    logger.debug('Number of columns: %d', objects.shape[1])
 
     # aggregation of objects and links for further analytics
     objects_links = pd.merge(links, objects, how='outer', on=joint_id)
     # aggregation of tracks as well for further analytics
-    objects_links_tracks = pd.merge(objects_links, tracks, how='outer', on=link_id)
+    objects_links_tracks = pd.merge(
+        objects_links, tracks, how='outer', on=link_id
+    )
 
     x = track_dict.get(names.X_COORD_NAME)
     y = track_dict.get(names.Y_COORD_NAME)
@@ -101,23 +113,24 @@ def main(argv):
         cum_df = plot.cum_displ(objects_links_tracks, link_id, x, y)
         plot.plotXY(cum_df, 'TRACK_ID', x + 'cum', y + 'cum')
 
-        plot.plotXY(cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', x + 'cum', y + 'cum')
+        plot.plotXY(
+            cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', x + 'cum', y + 'cum'
+        )
         plot.plotXY(objects_links_tracks, 'TRACK_ID', x, y)
-
-        print('Please wait, normalizing dataset....')
+        plot.plotXY(objects_links_tracks, 'LINK_ID', x, y)
+        logger.info(
+            'normalizing dataset to the origin of the coordinate system...'
+        )
         norm = plot.normalize(objects_links_tracks, 'TRACK_ID', x, y)
-
-        print('Dataset normaized to the origin of the coordinate system.')
         plot.plotXY(norm, 'TRACK_ID', x + 'norm', y + 'norm')
-        print('Please wait, computing turning angles ....')
+        plot.plotXY(norm, 'LINK_ID', x + 'norm', y + 'norm')
+        logger.info('computing turning angles...')
         ta_norm = plot.compute_ta(norm, 'TRACK_ID', x, y)
         theta = ta_norm.ta[~np.isnan(ta_norm.ta)]
-        theta_deg = theta.apply(math.degrees)
         theta = pd.DataFrame(theta)
         plot.plot_polar(theta, 10)
-    except KeyError as ke:
-        print('!!! Seems like one or more variable provided are not in the dataset.')
-        print('Try again, please.')  # for now, just restart
+    except KeyError:
+        logger.error('one or more variable provided are not in the dataset')
 
 
 if __name__ == "__main__":
