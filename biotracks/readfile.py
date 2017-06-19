@@ -292,6 +292,29 @@ class IcyReader(TracksReader):
         return obj_df, links_df
 
 
+class CellmiaReader(TracksReader):
+
+    ENCODING = "iso-8859-1"
+    SEP = "\t"
+
+    def read(self):
+        # FIXME: "LINK_ID" is hardcoded in pushtopandas.py
+        cellmia_link_id = "ID of track"
+        x = self.conf.get(X_COORD_NAME)
+        y = self.conf.get(Y_COORD_NAME)
+        frame_id = self.conf.get(FRAME_NAME)
+        link_id = self.conf.get(LINK_NAME)
+        obj_id = self.conf.get(OBJECT_NAME)
+        df = pd.read_csv(self.fname, sep=self.SEP, encoding=self.ENCODING,
+                         usecols=[cellmia_link_id, frame_id, x, y])
+        df.reset_index(inplace=True)
+        df.rename(columns={"index": obj_id}, inplace=True)
+        df.rename(columns={cellmia_link_id: link_id}, inplace=True)
+        obj_df = df.drop(link_id, 1)
+        links_df = df.drop([frame_id, x, y], 1)
+        return obj_df, links_df
+
+
 def read_file(fname, track_dict, log_level=None):
     if fname.endswith('.xls'):
         objects, links = IcyReader(fname, log_level=log_level).read()
@@ -299,6 +322,10 @@ def read_file(fname, track_dict, log_level=None):
         objects, links = TrackMateReader(fname, log_level=log_level).read()
     elif fname.endswith('.csv'):
         objects, links = CellProfilerReader(
+            fname, conf=track_dict, log_level=log_level
+        ).read()
+    elif fname.endswith('.txt'):
+        objects, links = CellmiaReader(
             fname, conf=track_dict, log_level=log_level
         ).read()
     return {'objects': objects, 'links': links}
