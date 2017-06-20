@@ -14,13 +14,20 @@ RUN true \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& true
 
-COPY . /src
+# Copy requirements.txt first (they are unlikely to change)
+# and install deps right after, so they are cached.
+COPY requirements.txt /src/
 WORKDIR /src
+RUN true \
+	&& pip install -r requirements.txt \
+	&& pip install pytest \
+	&& true
+
+# Copy the rest of the project.
+COPY . /src
 
 RUN true \
 	&& adduser dp \
-	&& pip install -r requirements.txt \
-	&& pip install pytest \
 	&& python setup.py install \
 	&& chown -R dp:dp /src \
 	&& true
