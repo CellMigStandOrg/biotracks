@@ -3,16 +3,27 @@ FROM continuumio/miniconda3
 # https://www.continuum.io/blog/developer-blog/anaconda-and-docker-better-together-reproducible-data-science
 #  docker run -i -t -p 8888:8888 continuumio/anaconda3 /bin/bash -c "/opt/conda/bin/conda install jupyter -y --quiet && mkdir /opt/notebooks && /opt/conda/bin/jupyter notebook --notebook-dir=/opt/notebooks --ip='*' --port=8888 --no-browser"
 
+RUN true \
+	&& pip install --upgrade pip \
+	&& conda install -y matplotlib \
+	&& true
 
-RUN apt-get update && apt-get install -y build-essential
-RUN pip install --upgrade pip
-RUN conda install -y matplotlib
-RUN pip install datapackage jsontableschema jsontableschema-pandas
-RUN pip install pytest
-RUN adduser dp
+RUN true \
+	&& apt-get update \
+	&& apt-get install -y make \
+	&& rm -rf /var/lib/apt/lists/* \
+	&& true
+
 COPY . /src
 WORKDIR /src
-RUN python setup.py install
-RUN chown -R dp:dp /src
+
+RUN true \
+	&& adduser dp \
+	&& pip install -r requirements.txt \
+	&& pip install pytest \
+	&& python setup.py install \
+	&& chown -R dp:dp /src \
+	&& true
+
 USER dp
-RUN make test
+CMD ["make", "test"]
