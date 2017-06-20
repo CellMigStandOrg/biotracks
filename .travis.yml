@@ -3,7 +3,8 @@ services:
   - docker
 
 script:
-  - docker build -t dp .
+  - docker build -t cmso/biotracks .
+  - docker run cmso/biotracks
 
 deploy:
    provider: pypi
