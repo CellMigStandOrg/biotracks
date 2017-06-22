@@ -60,6 +60,10 @@ class TestPushToPandas(object):
         d = data('ICY')
         self.__check_dicts(d, 'OBJECT_ID', 'LINK_ID', 'TRACK_ID')
 
+    def test_cellmia(self, data):
+        d = data('CELLMIA')
+        self.__check_dicts(d, 'object_id', 'LINK_ID', 'TRACK_ID')
+
     def test_cellprofiler(self, data):
         d = data('CellProfiler')
         td = d['conf']['TRACKING_DATA']
