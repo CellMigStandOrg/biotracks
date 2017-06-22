@@ -24,6 +24,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
+import os
 import xml.etree.ElementTree as ET
 
 import pandas as pd
@@ -316,16 +317,22 @@ class CellmiaReader(TracksReader):
 
 
 def read_file(fname, track_dict, log_level=None):
-    if fname.endswith('.xls'):
+    logger = get_logger('read_file', level=log_level)
+    _, ext = os.path.splitext(fname)
+    if ext == '.xls':
         objects, links = IcyReader(fname, log_level=log_level).read()
-    elif fname.endswith('.xml'):
+    elif ext == '.xml':
         objects, links = TrackMateReader(fname, log_level=log_level).read()
-    elif fname.endswith('.csv'):
+    elif ext == '.csv':
         objects, links = CellProfilerReader(
             fname, conf=track_dict, log_level=log_level
         ).read()
-    elif fname.endswith('.txt'):
+    elif ext == '.txt':
         objects, links = CellmiaReader(
             fname, conf=track_dict, log_level=log_level
         ).read()
+    else:
+        msg = '%r: unknown format: %r' % (fname, ext)
+        logger.error(msg)
+        raise RuntimeError(msg)
     return {'objects': objects, 'links': links}
