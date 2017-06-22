@@ -1,0 +1,81 @@
+{
+    "author": "paola masuzzo",
+    "author_email": "paola.masuzzo@email.com",
+    "author_institute": "VIB",
+    "name": "CMSO_tracks",
+    "resources": [
+        {
+            "name": "objects_table",
+            "path": "objects.csv",
+            "schema": {
+                "fields": [
+                    {
+                        "constraints": {
+                            "unique": true
+                        },
+                        "description": "",
+                        "format": "default",
+                        "name": "object_id",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "time index",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "cell row",
+                        "title": "",
+                        "type": "number"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "cell col",
+                        "title": "",
+                        "type": "number"
+                    }
+                ],
+                "primaryKey": "object_id"
+            }
+        },
+        {
+            "name": "links_table",
+            "path": "links.csv",
+            "schema": {
+                "fields": [
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "object_id",
+                        "title": "",
+                        "type": "integer"
+                    },
+                    {
+                        "description": "",
+                        "format": "default",
+                        "name": "LINK_ID",
+                        "title": "",
+                        "type": "integer"
+                    }
+                ],
+                "foreignKeys": [
+                    {
+                        "fields": "object_id",
+                        "reference": {
+                            "datapackage": "",
+                            "fields": "object_id",
+                            "resource": "objects_table"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "title": "A CMSO data package representation of cell tracking data"
+}
