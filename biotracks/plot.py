@@ -63,7 +63,7 @@ def plotXY(df, id_, x_coord, y_coord):
     grid.map(plt.plot, x_coord, y_coord, marker=".", ms=0.3)
     grid.map(plt.scatter, x_coord, y_coord, marker="o", s=20)
     grid.set_xticklabels(rotation=90)
-    sns.plt.show()
+    sns.plt.savefig("trajectories.png")
 
 
 def normalize(df, id_, x_coord, y_coord):
@@ -168,4 +168,4 @@ def plot_polar(theta, N):
             bar.set_facecolor(plt.cm.Spectral(r))
             bar.set_alpha(0.5)
 
-    sns.plt.show()
+    sns.plt.savefig("turning_angles.png")
