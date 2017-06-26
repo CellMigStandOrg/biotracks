@@ -67,7 +67,7 @@ def plotXY(df, id_, x_coord, y_coord):
 
 
 def normalize(df, id_, x_coord, y_coord):
-    """Normalize to the origin.
+    """Normalize to the origin of the coordinate system.
 
     df -- the trajectories dataframe
     id_ -- an identifier (linkID or trackID)
@@ -75,47 +75,23 @@ def normalize(df, id_, x_coord, y_coord):
     y_coord -- the y coordinate
     """
     list_ = []
-    x_norm = x_coord + 'norm'
-    y_norm = y_coord + 'norm'
     df = df.dropna()
     for i in df[id_].unique():
         tmp = df[df[id_] == i]
-        # the first x and y values
-        x0, y0 = tmp.iloc[0][x_coord], tmp.iloc[0][y_coord]
-        for index, row in tmp.iterrows():
-            current_x, current_y = row[x_coord], row[y_coord]
-            xn, yn = current_x - x0, current_y - y0
-            # pass a list to .loc to be sure to get a dataframe: behavior is
-            # not consistent!
-            tmp_row = tmp.loc[[index]]
-            tmp_row[x_norm], tmp_row[y_norm] = xn, yn
-            list_.append(tmp_row)
+        # convert coordinates columns into numpy array
+        array = tmp[[x_coord, y_coord]].values
+        # substract first x and y coordinates
+        diff_array = array - array[0]
+        diff_df = pd.DataFrame(diff_array, columns=['x_norm', 'y_norm'])
+        tmp = tmp.assign(x_norm=diff_df.x_norm.values,
+                         y_norm=diff_df.y_norm.values)
+        list_.append(tmp)
+    result = pd.concat(list_)
+    return result
 
-    df = pd.concat(list_)
-    return df
 
-def cum_displ(df, id_, x_coord, y_coord):
-    list_ = []
-    x_cum = x_coord + 'cum'
-    y_cum = y_coord + 'cum'
-    for i in df[id_].unique():
-        tmp = df[df[id_] == i]
-        cumX = 0
-        cumY = 0
-        for index, row in tmp.iterrows():
-            current_x, current_y = row[x_coord], row[y_coord]
-            tmp_row = tmp.loc[[index]]
-
-            cumX+=current_x
-            cumY+=current_y
-            tmp_row[x_cum], tmp_row[y_cum] = cumX, cumY
-            list_.append(tmp_row)
-
-    df = pd.concat(list_)
-    return df
-
-def compute_ta(df, id_, x_coord, y_coord):
-    """Compute turning angles.
+def compute_cumulative_displacements(df, id_, x_coord, y_coord):
+    """Compute cumulative displacements of motion in the two directions, x and y.
 
     df -- the trajectories dataframe
     id_ -- an identifier
@@ -123,25 +99,69 @@ def compute_ta(df, id_, x_coord, y_coord):
     y_coord -- the y coordinate
     """
     list_ = []
+    
+    df = df.dropna()
+    for i in df[id_].unique():
+        tmp = df[df[id_] == i]
+        # convert coordinates columns into numpy array
+        array = tmp[[x_coord, y_coord]].values
+        # add rows
+        sum_array = np.cumsum(array, axis=0)        
+        sum_df = pd.DataFrame(sum_array, columns=['x_cum', 'y_cum'])
+        tmp = tmp.assign(x_cum=sum_df.x_cum.values,
+                         y_cum=sum_df.y_cum.values)
+        list_.append(tmp)
+
+    result = pd.concat(list_)
+    return result
+
+
+def compute_displacements(df, id_, x_coord, y_coord):
+    """Compute net displacements of motion in the two directions, x and y.
+
+    df -- the trajectories dataframe
+    id_ -- an identifier
+    x_coord -- the x coordinate
+    y_coord -- the y coordinate
+    """
+    list_ = []
+    df = df.dropna()
+    for i in df[id_].unique():
+        tmp = df[df[id_] == i]
+        # convert coordinates columns into numpy array
+        array = tmp[[x_coord, y_coord]].values
+        # substract rows
+        diff_array = np.diff(array, axis=0)
+        # need to insert NaN at the first position
+        diff_array = np.insert(diff_array, [0], [np.NaN, np.NaN], axis=0)
+        diff_df = pd.DataFrame(diff_array, columns=['delta_x', 'delta_y'])
+        tmp = tmp.assign(delta_x=diff_df.delta_x.values,
+                         delta_y=diff_df.delta_y.values)
+        list_.append(tmp)
+    result = pd.concat(list_)
+    return result
+
+
+def compute_turning_angle(df, id_):
+    """Compute turning angles.
+
+    df -- the trajectories dataframe
+    id_ -- an identifier
+    """
+    list_ = []
     for i in df[id_].unique():
         tmp_df = pd.DataFrame()
+
         tmp = df[df[id_] == i]
-        for i, row in enumerate(tmp.iterrows()):
-            temp_tracks_row = tmp.iloc[[i]]
-            if i == 0:
-                previousX, previousY = row[1][x_coord], row[1][y_coord]
-                tmp_df.loc[i, 'ta'] = float('NaN')
-            else:
-                delta_x, delta_y = row[1][x_coord] - \
-                    previousX, row[1][y_coord] - previousY
-                previousX, previousY = row[1][x_coord], row[1][y_coord]
-                ta = math.atan2(delta_y, delta_x)
-                tmp_df.loc[i, 'ta'] = ta
+        array = tmp[['delta_x', 'delta_y']].values
+        turning_angle = np.apply_along_axis(
+            lambda x: math.atan2(x[0], x[1]), 1, array)
 
-            list_.append(tmp_df)
-
-    df = pd.concat(list_)
-    return df
+        ta_df = pd.DataFrame(turning_angle, columns=['ta'])
+        tmp = tmp.assign(ta=ta_df.ta.values)
+        list_.append(tmp)
+    result = pd.concat(list_)
+    return result
 
 
 def plot_polar(theta, N):

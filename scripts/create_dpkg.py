@@ -134,29 +134,27 @@ def main(argv):
     y = track_dict.get(names.Y_COORD_NAME)
     frame = track_dict.get(names.FRAME_NAME)
     # basic visualizations
-    try:
-        plot.prepareforplot(objects_links_tracks, x, y, frame)
-        cum_df = plot.cum_displ(objects_links_tracks, link_id, x, y)
-        plot.plotXY(cum_df, 'TRACK_ID', x + 'cum', y + 'cum')
+    plot.prepareforplot(objects_links_tracks, x, y, frame)
+    cum_df = plot.compute_cumulative_displacements(objects_links_tracks, link_id, x, y)
+    plot.plotXY(cum_df, 'TRACK_ID', 'x_cum', 'y_cum')
 
-        plot.plotXY(
-            cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', x + 'cum', y + 'cum'
-        )
-        plot.plotXY(objects_links_tracks, 'TRACK_ID', x, y)
-        plot.plotXY(objects_links_tracks, 'LINK_ID', x, y)
-        logger.info(
+    plot.plotXY(cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', 'x_cum', 'y_cum')
+    plot.plotXY(objects_links_tracks, 'TRACK_ID', x, y)
+    plot.plotXY(objects_links_tracks, link_id, x, y)
+    logger.info(
             'normalizing dataset to the origin of the coordinate system...'
         )
-        norm = plot.normalize(objects_links_tracks, 'TRACK_ID', x, y)
-        plot.plotXY(norm, 'TRACK_ID', x + 'norm', y + 'norm')
-        plot.plotXY(norm, 'LINK_ID', x + 'norm', y + 'norm')
-        logger.info('computing turning angles...')
-        ta_norm = plot.compute_ta(norm, 'TRACK_ID', x, y)
-        theta = ta_norm.ta[~np.isnan(ta_norm.ta)]
-        theta = pd.DataFrame(theta)
-        plot.plot_polar(theta, 10)
-    except KeyError:
-        logger.error('one or more variable provided are not in the dataset')
+    norm = plot.normalize(objects_links_tracks, 'TRACK_ID', x, y)
+    plot.plotXY(norm, 'TRACK_ID', 'x_norm', 'y_norm')
+    plot.plotXY(norm, link_id, 'x_norm', 'y_norm')
+    logger.info('computing displacements in the two directions of motion...')
+    norm = plot.compute_displacements(norm, 'TRACK_ID', x, y)
+    logger.info('computing turning angles...')
+    norm = plot.compute_turning_angle(norm, 'TRACK_ID')
+ 
+    theta = pd.DataFrame(norm.ta[~np.isnan(norm.ta)])
+    plot.plot_polar(theta, 10)
+   
 
 
 if __name__ == "__main__":
