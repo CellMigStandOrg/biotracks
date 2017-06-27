@@ -24,13 +24,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
-# import needed libraries
 import math
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pylab as pl
 import seaborn as sns
 
 
@@ -76,7 +74,8 @@ def normalize(df, id_, x_coord, y_coord):
 
 
 def compute_cumulative_displacements(df, id_, x_coord, y_coord):
-    """Compute cumulative displacements of motion in the two directions, x and y.
+    """Compute cumulative displacements of motion in the two directions, x
+    and y.
 
     df -- the trajectories dataframe
     id_ -- an identifier
@@ -84,14 +83,14 @@ def compute_cumulative_displacements(df, id_, x_coord, y_coord):
     y_coord -- the y coordinate
     """
     list_ = []
-    
+
     df = df.dropna()
     for i in df[id_].unique():
         tmp = df[df[id_] == i]
         # convert coordinates columns into numpy array
         array = tmp[[x_coord, y_coord]].values
         # add rows
-        sum_array = np.cumsum(array, axis=0)        
+        sum_array = np.cumsum(array, axis=0)
         sum_df = pd.DataFrame(sum_array, columns=['x_cum', 'y_cum'])
         tmp = tmp.assign(x_cum=sum_df.x_cum.values,
                          y_cum=sum_df.y_cum.values)
@@ -135,8 +134,6 @@ def compute_turning_angle(df, id_):
     """
     list_ = []
     for i in df[id_].unique():
-        tmp_df = pd.DataFrame()
-
         tmp = df[df[id_] == i]
         array = tmp[['delta_x', 'delta_y']].values
         turning_angle = np.apply_along_axis(

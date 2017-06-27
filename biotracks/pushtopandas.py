@@ -69,7 +69,8 @@ def push_to_pandas(directory, object_id_cmso, log_level=None):
             for index, b in enumerate(ind):
                 if b:
                     # link not in dictionary
-                    if link not in [l for v in tracks_dict.values() for l in v]:
+                    if link not in [l for v in tracks_dict.values()
+                                    for l in v]:
                         TRACK_ID += 1
                         tracks_dict[TRACK_ID] = []
                     tracks_dict[TRACK_ID].append(link)
