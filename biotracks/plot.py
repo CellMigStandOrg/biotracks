@@ -34,21 +34,6 @@ import pylab as pl
 import seaborn as sns
 
 
-def prepareforplot(df, x, y, t):
-    """Prepare data for visualizations.
-
-    Keyword arguments: (passed through command line for the moment)
-    df -- the trajectories dataframe
-    x -- the x_coordinate header
-    y -- the y_coordinate header
-    t -- the time header
-    """
-    x_coord = x
-    y_coord = y
-    time = t
-    df.sort_values(time, axis=0, inplace=True)
-
-
 def plotXY(df, id_, x_coord, y_coord):
     """Plot the raw trajectories.
 

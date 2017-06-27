@@ -134,7 +134,7 @@ def main(argv):
     y = track_dict.get(names.Y_COORD_NAME)
     frame = track_dict.get(names.FRAME_NAME)
     # basic visualizations
-    plot.prepareforplot(objects_links_tracks, x, y, frame)
+    objects_links_tracks.sort_values(frame, axis=0, inplace=True)
     cum_df = plot.compute_cumulative_displacements(objects_links_tracks, link_id, x, y)
     plot.plotXY(cum_df, 'TRACK_ID', 'x_cum', 'y_cum')
 
