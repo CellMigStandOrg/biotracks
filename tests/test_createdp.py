@@ -54,6 +54,10 @@ class TestCreatedp(object):
         d = data('ICY')
         self.__check_dps(d, 'OBJECT_ID')
 
+    def test_cellmia(self, data):
+        d = data('CELLMIA')
+        self.__check_dps(d, 'object_id')
+
     def test_cellprofiler(self, data):
         d = data('CellProfiler')
         self.__check_dps(d, d['conf']['TRACKING_DATA'][names.OBJECT_NAME])
