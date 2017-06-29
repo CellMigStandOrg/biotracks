@@ -134,8 +134,10 @@ def main(argv):
     y = track_dict.get(names.Y_COORD_NAME)
     frame = track_dict.get(names.FRAME_NAME)
     # basic visualizations
-    plot.prepareforplot(objects_links_tracks, x, y, frame)
-    cum_df = plot.compute_cumulative_displacements(objects_links_tracks, link_id, x, y)
+    objects_links_tracks.sort_values(frame, axis=0, inplace=True)
+    cum_df = plot.compute_cumulative_displacements(
+        objects_links_tracks, link_id, x, y
+    )
     plot.plotXY(cum_df, 'TRACK_ID', 'x_cum', 'y_cum')
 
     plot.plotXY(cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', 'x_cum', 'y_cum')
@@ -151,10 +153,8 @@ def main(argv):
     norm = plot.compute_displacements(norm, 'TRACK_ID', x, y)
     logger.info('computing turning angles...')
     norm = plot.compute_turning_angle(norm, 'TRACK_ID')
- 
     theta = pd.DataFrame(norm.ta[~np.isnan(norm.ta)])
     plot.plot_polar(theta, 10)
-   
 
 
 if __name__ == "__main__":

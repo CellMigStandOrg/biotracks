@@ -1,8 +1,15 @@
 language: python
+
+python:
+ - "3.3"
+
 services:
   - docker
 
+before_install: pip install flake8
+
 script:
+  - flake8 -v .
   - docker build -t cmso/biotracks .
   - docker run cmso/biotracks
 

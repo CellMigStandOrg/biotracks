@@ -152,7 +152,7 @@ class TrackMateReader(TracksReader):
                     # flag an event
                     if tmp.shape[0] > 1:  # if number rows > 1
                         if (index == 0 and tmp.iloc[index].SPOT_TARGET_ID !=
-                            tmp.iloc[index + 1].SPOT_SOURCE_ID):
+                                tmp.iloc[index + 1].SPOT_SOURCE_ID):
                             link_id += 1
                             links_dict[link_id] = []
                             event = True
@@ -248,7 +248,7 @@ class CellProfilerReader(TracksReader):
                     parentObject = row[self.parent_obj_id]
                     for j, r in tmp.iterrows():
                         if (r.ObjectNumber == parentObject and
-                            r[self.frame] == parentImage):
+                                r[self.frame] == parentImage):
                             unique_parent_object = j
                             break
                     if row.ObjectNumber == row[self.parent_obj_id]:
