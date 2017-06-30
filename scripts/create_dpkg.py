@@ -82,14 +82,18 @@ def main(argv):
         args.config = os.path.join(input_dir, DEFAULT_CONFIG_BASENAME)
         logger.info('Trying default config file location: "%s"', args.config)
     if not os.path.isfile(args.config):
-        sys.exit('ERROR: configuration file "%s" not found' % args.config)
-    conf = configparser.ConfigParser()
-    conf.read(args.config)
+        logger.info('Config file not present, using defaults')
+        top_level_dict = {'name': names.PACKAGE_NAME}
+        track_dict = {}
+    else:
+        conf = configparser.ConfigParser()
+        conf.read(args.config)
+        top_level_dict = conf['TOP_LEVEL_INFO']
+        track_dict = conf['TRACKING_DATA']
 
-    top_level_dict = conf['TOP_LEVEL_INFO']
-    track_dict = conf['TRACKING_DATA']
-    joint_id = track_dict.get(names.OBJECT_NAME)
-    link_id = track_dict.get(names.LINK_NAME)
+    joint_id = names.OBJECT_NAME
+    link_id = names.LINK_NAME
+    track_id = names.TRACK_NAME
 
     # read file - returns a dictionary with objects and links
     dict_ = readfile.read_file(
@@ -130,29 +134,29 @@ def main(argv):
         objects_links, tracks, how='outer', on=link_id
     )
 
-    x = track_dict.get(names.X_COORD_NAME)
-    y = track_dict.get(names.Y_COORD_NAME)
-    frame = track_dict.get(names.FRAME_NAME)
+    x = names.X_COORD_NAME
+    y = names.Y_COORD_NAME
+    frame = names.FRAME_NAME
     # basic visualizations
     objects_links_tracks.sort_values(frame, axis=0, inplace=True)
     cum_df = plot.compute_cumulative_displacements(
         objects_links_tracks, link_id, x, y
     )
-    plot.plotXY(cum_df, 'TRACK_ID', 'x_cum', 'y_cum')
+    plot.plotXY(cum_df, track_id, 'x_cum', 'y_cum')
 
-    plot.plotXY(cum_df[cum_df['LINK_ID'] == 0], 'TRACK_ID', 'x_cum', 'y_cum')
-    plot.plotXY(objects_links_tracks, 'TRACK_ID', x, y)
+    plot.plotXY(cum_df[cum_df[link_id] == 0], track_id, 'x_cum', 'y_cum')
+    plot.plotXY(objects_links_tracks, track_id, x, y)
     plot.plotXY(objects_links_tracks, link_id, x, y)
     logger.info(
             'normalizing dataset to the origin of the coordinate system...'
         )
-    norm = plot.normalize(objects_links_tracks, 'TRACK_ID', x, y)
-    plot.plotXY(norm, 'TRACK_ID', 'x_norm', 'y_norm')
+    norm = plot.normalize(objects_links_tracks, track_id, x, y)
+    plot.plotXY(norm, track_id, 'x_norm', 'y_norm')
     plot.plotXY(norm, link_id, 'x_norm', 'y_norm')
     logger.info('computing displacements in the two directions of motion...')
-    norm = plot.compute_displacements(norm, 'TRACK_ID', x, y)
+    norm = plot.compute_displacements(norm, track_id, x, y)
     logger.info('computing turning angles...')
-    norm = plot.compute_turning_angle(norm, 'TRACK_ID')
+    norm = plot.compute_turning_angle(norm, track_id)
     theta = pd.DataFrame(norm.ta[~np.isnan(norm.ta)])
     plot.plot_polar(theta, 10)
 

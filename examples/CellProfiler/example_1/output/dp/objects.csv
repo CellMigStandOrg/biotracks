@@ -1,4 +1,4 @@
-ObjectID,ImageNumber,TrackObjects_TrajectoryX_15,TrackObjects_TrajectoryY_15
+object_id_cmso,frame_cmso,x_coord_cmso,y_coord_cmso
 0,1.0,0.0,0.0
 1,2.0,0.0,2.25
 2,3.0,0.0,4.0

@@ -33,7 +33,7 @@ except ImportError:
 import pandas as pd
 
 from .utils import get_logger
-from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME
+from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME, LINK_NAME, TRACK_NAME
 
 
 def push_to_pandas(directory, object_id_cmso, log_level=None):
@@ -54,9 +54,11 @@ def push_to_pandas(directory, object_id_cmso, log_level=None):
     tracks_dict = {}
     list_ = []
     TRACK_ID = -1
-    for link in links.LINK_ID.unique():
-        tmp = links[links.LINK_ID == link]
-        rest = links[(links.LINK_ID != link) & (~links.LINK_ID.isin(list_))]
+    for link in links[LINK_NAME].unique():
+        tmp = links[links[LINK_NAME] == link]
+        rest = links[
+            (links[LINK_NAME] != link) & (~links[LINK_NAME].isin(list_))
+        ]
         ind = rest[object_id_cmso].isin(tmp[object_id_cmso])
         # no shared spots
         if not any(ind):
@@ -74,7 +76,7 @@ def push_to_pandas(directory, object_id_cmso, log_level=None):
                         TRACK_ID += 1
                         tracks_dict[TRACK_ID] = []
                     tracks_dict[TRACK_ID].append(link)
-                    tracks_dict[TRACK_ID].append(rest.iloc[index].LINK_ID)
+                    tracks_dict[TRACK_ID].append(rest.iloc[index][LINK_NAME])
         list_.append(link)
 
     # get unique links and construct tracks dataframe
@@ -87,5 +89,5 @@ def push_to_pandas(directory, object_id_cmso, log_level=None):
     for key, value in tracks_dict_unique.items():
         for link in value:
             tracks = tracks.append([[key, link]], ignore_index=True)
-    tracks.columns = ['TRACK_ID', 'LINK_ID']
+    tracks.columns = [TRACK_NAME, LINK_NAME]
     return {'objects': objects, 'links': links, 'tracks': tracks}
