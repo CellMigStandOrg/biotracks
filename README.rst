@@ -1,5 +1,5 @@
-A datapackage representation of cell migration-derived tracking files.
-******************************************************************************
+Biotracks: a standard format for cell migration-derived tracking files
+======================================================================
 
 .. image:: https://travis-ci.org/CellMigStandOrg/biotracks.svg?branch=master
     :target: https://travis-ci.org/CellMigStandOrg/biotracks
@@ -7,17 +7,128 @@ A datapackage representation of cell migration-derived tracking files.
 .. image:: https://badge.fury.io/py/biotracks.svg
     :target: https://badge.fury.io/py/biotracks
 
-This Python project aims to create a simple Python package to produce data packages of cell migration tracking files. The final goal is to have a uniform, standardized way to represent these data, as in `Frictionless Data <http://frictionlessdata.io/>`_ and `Data Packages <http://frictionlessdata.io/data-packages/>`_ .
+Biotracks provides a standard format for cell migration tracking files and a series of converters to this format from popular tracking sofware packages. The biotracks format is a specialization of the `Frictionless Tabular Data Package <http://specs.frictionlessdata.io/tabular-data-package/>`_ .
 
-Steps to follow to use the package:
 
-+ **step 1** - Install the package (note it's Python 3 only at the moment):
+Installation (Python 3 only)
+----------------------------
 
 .. code-block::
 
    python setup.py install
 
-+ **step 2** - create a ``biotracks.ini`` configuration file and place it in the same directory as your tracking file. The file must be structured as follows:
+
+Usage
+-----
+
+Move to the ``scripts`` directory and run:
+
+.. code-block:: bash
+
+  python create_dpkg.py your_tracking_file
+
+This will create a tabular data package directory containing:
+
++ a csv file for the **objects** (e.g., cells)
++ a csv file for the **links** (linear collections of objects)
++ the json descriptor file for the data package
+
+The latter will look like this:
+
+.. code-block:: json
+
+  {
+      "name": "cmso_tracks",
+      "resources": [
+          {
+              "name": "objects_table",
+              "path": "objects.csv",
+              "schema": {
+                  "fields": [
+                      {
+                          "constraints": {
+                              "unique": true
+                          },
+                          "description": "",
+                          "format": "default",
+                          "name": "object_id_cmso",
+                          "title": "",
+                          "type": "integer"
+                      },
+                      {
+                          "description": "",
+                          "format": "default",
+                          "name": "frame_cmso",
+                          "title": "",
+                          "type": "integer"
+                      },
+                      {
+                          "description": "",
+                          "format": "default",
+                          "name": "x_coord_cmso",
+                          "title": "",
+                          "type": "number"
+                      },
+                      {
+                          "description": "",
+                          "format": "default",
+                          "name": "y_coord_cmso",
+                          "title": "",
+                          "type": "number"
+                      }
+                  ],
+                  "primaryKey": "object_id_cmso"
+              }
+          },
+          {
+              "name": "links_table",
+              "path": "links.csv",
+              "schema": {
+                  "fields": [
+                      {
+                          "description": "",
+                          "format": "default",
+                          "name": "link_id_cmso",
+                          "title": "",
+                          "type": "integer"
+                      },
+                      {
+                          "description": "",
+                          "format": "default",
+                          "name": "object_id_cmso",
+                          "title": "",
+                          "type": "integer"
+                      }
+                  ],
+                  "foreignKeys": [
+                      {
+                          "fields": "object_id_cmso",
+                          "reference": {
+                              "datapackage": "",
+                              "fields": "object_id_cmso",
+                              "resource": "objects_table"
+                          }
+                      }
+                  ]
+              }
+          }
+      ]
+  }
+
+The script also creates plots of trajectories and turning angles.
+
+
+Configuration
+-------------
+
+Some formats require a configuration file that specifies how to map object IDs, coordinate names, etc. This file must be in the `INI <https://en.wikipedia.org/wiki/INI_file>`_ format with two sections:
+
++ TOP_LEVEL_INFO: specifies a name for the data package and additional (optional) information
++ TRACKING_DATA: specifies how to map information from the source format to the biotracks column headers
+
+You can provide a configuration file by passing it via the ``-c`` option to ``create_dpkg.py``; if this option is not set, the script will look for a ``biotracks.ini`` file in the same directory as your tracking file; if this is not found, the script will use default names for both the overall package and the column headers.
+
+Example:
 
 .. code-block::
 
@@ -35,92 +146,3 @@ Steps to follow to use the package:
   frame_cmso = the column name pointing to the frame information
   object_id_cmso = the object identifier
   link_id_cmso = the link identifier
-
-
-+  **step 3** - move to the ``scripts`` directory and run:
-
-.. code-block:: python
-
-  python create_dpkg.py your_tracking_file
-
-this will create a **dp** directory containing:
-
-+ a *csv* file for the **objects** (i.e. cells)
-+ a *csv* file for the **links** (i.e. a linear collection of objects)
-+ and a **dp.json** file containing the *json* schemas of the two *csv* files.
-
-
-This last file will look something like this:
-
-.. code-block:: json
-
-  {
-      "resources": [{
-          "name": "objects_table",
-          "schema": {
-              "primaryKey": "SPOT_ID",
-              "fields": [{
-                  "name": "SPOT_ID",
-                  "title": "",
-                  "description": "",
-                  "constraints": {
-                      "unique": true
-                  },
-                  "type": "integer",
-                  "format": "default"
-              }, {
-                  "type": "integer",
-                  "name": "FRAME",
-                  "title": "",
-                  "format": "default",
-                  "description": ""
-              }, {
-                  "type": "number",
-                  "name": "POSITION_X",
-                  "title": "",
-                  "format": "default",
-                  "description": ""
-              }, {
-                  "type": "number",
-                  "name": "POSITION_Y",
-                  "title": "",
-                  "format": "default",
-                  "description": ""
-              }]
-          },
-          "path": "objects.csv"
-      }, {
-          "name": "links_table",
-          "schema": {
-              "foreignKeys": [{
-                  "fields": "SPOT_ID",
-                  "reference": {
-                      "resource": "objects_table",
-                      "fields": "SPOT_ID",
-                      "datapackage": ""
-                  }
-              }],
-              "fields": [{
-                  "type": "integer",
-                  "name": "LINK_ID",
-                  "title": "",
-                  "format": "default",
-                  "description": ""
-              }, {
-                  "type": "integer",
-                  "name": "SPOT_ID",
-                  "title": "",
-                  "format": "default",
-                  "description": ""
-              }]
-          },
-          "path": "links.csv"
-      }],
-      "name": "CMSO_tracks",
-      "title": "A CMSO data package representation of cell tracking data",
-      "author_email": "paola.masuzzo@email.com",
-      "author_institute": "VIB",
-      "author": "paola masuzzo"
-  }
-
-Then, the datapackage is pushed to a **pandas** dataframe. At the moment, this dataframe is used to create simple visualizations of links and turning angles.
