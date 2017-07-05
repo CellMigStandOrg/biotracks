@@ -57,26 +57,21 @@ def data():
 class TestPushToPandas(object):
 
     def test_icy(self, data):
-        d = data('ICY')
-        self.__check_dicts(d, 'OBJECT_ID', 'LINK_ID', 'TRACK_ID')
+        self.__check_dicts(data('ICY'))
 
     def test_cellmia(self, data):
-        d = data('CELLMIA')
-        self.__check_dicts(d, 'object_id', 'LINK_ID', 'TRACK_ID')
+        self.__check_dicts(data('CELLMIA'))
 
     def test_cellprofiler(self, data):
-        d = data('CellProfiler')
-        td = d['conf']['TRACKING_DATA']
-        self.__check_dicts(
-            # TODO: add a track name slot to names.py and the config file spec
-            d, td[names.OBJECT_NAME], td[names.LINK_NAME], 'TRACK_ID'
-        )
+        self.__check_dicts(data('CellProfiler'))
 
     def test_trackmate(self, data):
-        d = data('TrackMate')
-        self.__check_dicts(d, 'SPOT_ID', 'LINK_ID', 'TRACK_ID')
+        self.__check_dicts(data('TrackMate'))
 
-    def __check_dicts(self, d, obj_id, link_id, track_id):
+    def __check_dicts(self, d):
+        obj_id = names.OBJECT_NAME
+        link_id = names.LINK_NAME
+        track_id = names.TRACK_NAME
         ret = push_to_pandas(d['dp_dir'], obj_id)
         exp_track_dict = get_track_dict(d['tracks_df'], link_id, track_id)
         track_dict = get_track_dict(ret['tracks'], link_id, track_id)

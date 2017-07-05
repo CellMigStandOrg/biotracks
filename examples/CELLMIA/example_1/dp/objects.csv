@@ -1,4 +1,4 @@
-object_id,time index,cell row,cell col
+object_id_cmso,frame_cmso,x_coord_cmso,y_coord_cmso
 0,0,2.1875,1170.1875
 1,1,2.2105259999999998,1171.578947
 2,2,14.333332999999998,1168.717949

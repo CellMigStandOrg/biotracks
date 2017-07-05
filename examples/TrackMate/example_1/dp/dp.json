@@ -2,7 +2,7 @@
     "author": "paola masuzzo",
     "author_email": "paola.masuzzo@email.com",
     "author_institute": "VIB",
-    "name": "CMSO_tracks",
+    "name": "cmso_tracks",
     "resources": [
         {
             "name": "objects_table",
@@ -15,33 +15,33 @@
                         },
                         "description": "",
                         "format": "default",
-                        "name": "SPOT_ID",
+                        "name": "object_id_cmso",
                         "title": "",
                         "type": "integer"
                     },
                     {
                         "description": "",
                         "format": "default",
-                        "name": "FRAME",
+                        "name": "frame_cmso",
                         "title": "",
                         "type": "integer"
                     },
                     {
                         "description": "",
                         "format": "default",
-                        "name": "POSITION_X",
+                        "name": "x_coord_cmso",
                         "title": "",
                         "type": "number"
                     },
                     {
                         "description": "",
                         "format": "default",
-                        "name": "POSITION_Y",
+                        "name": "y_coord_cmso",
                         "title": "",
                         "type": "number"
                     }
                 ],
-                "primaryKey": "SPOT_ID"
+                "primaryKey": "object_id_cmso"
             }
         },
         {
@@ -52,24 +52,24 @@
                     {
                         "description": "",
                         "format": "default",
-                        "name": "LINK_ID",
+                        "name": "link_id_cmso",
                         "title": "",
                         "type": "integer"
                     },
                     {
                         "description": "",
                         "format": "default",
-                        "name": "SPOT_ID",
+                        "name": "object_id_cmso",
                         "title": "",
                         "type": "integer"
                     }
                 ],
                 "foreignKeys": [
                     {
-                        "fields": "SPOT_ID",
+                        "fields": "object_id_cmso",
                         "reference": {
                             "datapackage": "",
-                            "fields": "SPOT_ID",
+                            "fields": "object_id_cmso",
                             "resource": "objects_table"
                         }
                     }

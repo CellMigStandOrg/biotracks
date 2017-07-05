@@ -51,22 +51,18 @@ def data():
 class TestCreatedp(object):
 
     def test_icy(self, data):
-        d = data('ICY')
-        self.__check_dps(d, 'OBJECT_ID')
+        self.__check_dps(data('ICY'))
 
     def test_cellmia(self, data):
-        d = data('CELLMIA')
-        self.__check_dps(d, 'object_id')
+        self.__check_dps(data('CELLMIA'))
 
     def test_cellprofiler(self, data):
-        d = data('CellProfiler')
-        self.__check_dps(d, d['conf']['TRACKING_DATA'][names.OBJECT_NAME])
+        self.__check_dps(data('CellProfiler'))
 
     def test_trackmate(self, data):
-        d = data('TrackMate')
-        self.__check_dps(d, 'SPOT_ID')
+        self.__check_dps(data('TrackMate'))
 
-    def __check_dps(self, d, obj_id):
+    def __check_dps(self, d):
         tld = d['conf']['TOP_LEVEL_INFO']
-        dp = createdp.create_dpkg(tld, {}, d['dp_dir'], obj_id)
+        dp = createdp.create_dpkg(tld, {}, d['dp_dir'], names.OBJECT_NAME)
         assert dp.to_dict() == d['dp'].to_dict()

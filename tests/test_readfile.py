@@ -55,23 +55,19 @@ def data():
 class TestReadFile(object):
 
     def test_icy(self, data):
-        d = data('ICY')
-        self.__check_dicts(d, 'OBJECT_ID', 'LINK_ID')
+        self.__check_dicts(data('ICY'))
 
     def test_cellmia(self, data):
-        d = data('CELLMIA')
-        self.__check_dicts(d, 'object_id', 'LINK_ID')
+        self.__check_dicts(data('CELLMIA'))
 
     def test_cellprofiler(self, data):
-        d = data('CellProfiler')
-        td = d['conf']['TRACKING_DATA']
-        self.__check_dicts(d, td[names.OBJECT_NAME], td[names.LINK_NAME])
+        self.__check_dicts(data('CellProfiler'))
 
     def test_trackmate(self, data):
-        d = data('TrackMate')
-        self.__check_dicts(d, 'SPOT_ID', 'LINK_ID')
+        self.__check_dicts(data('TrackMate'))
 
-    def __check_dicts(self, d, obj_id, link_id):
+    def __check_dicts(self, d):
+        obj_id, link_id = names.OBJECT_NAME, names.LINK_NAME
         exp_link_dict = get_link_dict(
             pd.read_csv(d['links_path']), obj_id, link_id
         )
