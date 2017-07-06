@@ -41,7 +41,7 @@ The latter will look like this:
       "name": "cmso_tracks",
       "resources": [
           {
-              "name": "objects_table",
+              "name": "cmso_objects_table",
               "path": "objects.csv",
               "schema": {
                   "fields": [
@@ -51,62 +51,62 @@ The latter will look like this:
                           },
                           "description": "",
                           "format": "default",
-                          "name": "object_id_cmso",
+                          "name": "cmso_object_id",
                           "title": "",
                           "type": "integer"
                       },
                       {
                           "description": "",
                           "format": "default",
-                          "name": "frame_cmso",
+                          "name": "cmso_frame_id",
                           "title": "",
                           "type": "integer"
                       },
                       {
                           "description": "",
                           "format": "default",
-                          "name": "x_coord_cmso",
+                          "name": "cmso_x_coord",
                           "title": "",
                           "type": "number"
                       },
                       {
                           "description": "",
                           "format": "default",
-                          "name": "y_coord_cmso",
+                          "name": "cmso_y_coord",
                           "title": "",
                           "type": "number"
                       }
                   ],
-                  "primaryKey": "object_id_cmso"
+                  "primaryKey": "cmso_object_id"
               }
           },
           {
-              "name": "links_table",
+              "name": "cmso_links_table",
               "path": "links.csv",
               "schema": {
                   "fields": [
                       {
                           "description": "",
                           "format": "default",
-                          "name": "link_id_cmso",
+                          "name": "cmso_link_id",
                           "title": "",
                           "type": "integer"
                       },
                       {
                           "description": "",
                           "format": "default",
-                          "name": "object_id_cmso",
+                          "name": "cmso_object_id",
                           "title": "",
                           "type": "integer"
                       }
                   ],
                   "foreignKeys": [
                       {
-                          "fields": "object_id_cmso",
+                          "fields": "cmso_object_id",
                           "reference": {
                               "datapackage": "",
-                              "fields": "object_id_cmso",
-                              "resource": "objects_table"
+                              "fields": "cmso_object_id",
+                              "resource": "cmso_objects_table"
                           }
                       }
                   ]
@@ -140,9 +140,9 @@ Example:
   author_email = a valid email address
 
   [TRACKING_DATA]
-  x_coord_cmso = the column name pointing to the x coordinate
-  y_coord_cmso = the column name pointing to the y coordinate
-  z_coord_cmso = the column name pointing to the z coordinate
-  frame_cmso = the column name pointing to the frame information
-  object_id_cmso = the object identifier
-  link_id_cmso = the link identifier
+  cmso_x_coord = the column name pointing to the x coordinate
+  cmso_y_coord = the column name pointing to the y coordinate
+  cmso_z_coord = the column name pointing to the z coordinate
+  cmso_frame_id = the column name pointing to the frame information
+  cmso_object_id = the object identifier
+  cmso_link_id = the link identifier
