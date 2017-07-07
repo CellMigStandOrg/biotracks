@@ -28,14 +28,11 @@
 Validate a CMSO datapackage.
 """
 
-import os
 import sys
 import argparse
 
-import datapackage
-
 from biotracks.validation import Validator
-from biotracks.utils import get_log_level, get_logger
+from biotracks.utils import get_log_level
 
 
 def log_level(s):
