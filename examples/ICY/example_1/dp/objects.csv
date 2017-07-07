@@ -1,4 +1,4 @@
-object_id_cmso,frame_cmso,x_coord_cmso,y_coord_cmso,z_coord_cmso
+cmso_object_id,cmso_frame_id,cmso_x_coord,cmso_y_coord,cmso_z_coord
 0,0.0,129.8153846153846,995.0153846153846,0.0
 1,1.0,129.8153846153846,995.0153846153846,0.0
 2,2.0,129.8153846153846,995.0153846153846,0.0
