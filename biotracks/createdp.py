@@ -27,10 +27,14 @@
 import csv
 import io
 import os
+import re
 
 import datapackage as dp
 from jsontableschema import infer
 from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME
+
+
+NAME_PATTERN = re.compile(r"^[a-z0-9_.-]+$")
 
 
 def create_dpkg(top_level_dict, dict_, directory, joint_id):
@@ -42,6 +46,12 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
     directory -- the directory
     joint_id -- the joint_identifier
     """
+    try:
+        name = top_level_dict["name"]
+    except KeyError:
+        raise ValueError("'name' is a required property")
+    if not NAME_PATTERN.match(name):
+        raise ValueError("invalid name: %r" % (name,))
 
     myDP = dp.DataPackage()
 

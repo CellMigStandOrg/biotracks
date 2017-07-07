@@ -66,3 +66,6 @@ class TestCreatedp(object):
         tld = d['conf']['TOP_LEVEL_INFO']
         dp = createdp.create_dpkg(tld, {}, d['dp_dir'], names.OBJECT_NAME)
         assert dp.to_dict() == d['dp'].to_dict()
+        tld['name'] = "CMSO_TRACKS"
+        with pytest.raises(ValueError):
+            createdp.create_dpkg(tld, {}, d['dp_dir'], names.OBJECT_NAME)
