@@ -35,6 +35,7 @@ from biotracks import validation, names
 
 OBJECTS_PATH = "objects.csv"
 LINKS_PATH = "links.csv"
+TRACKS_PATH = "tracks.csv"
 JSON = {
     "name": names.PACKAGE_NAME,
     "resources": [
@@ -164,6 +165,27 @@ class TestValidation(object):
         for k in "fields", "resource":
             d = deepcopy(JSON)
             d["resources"][i]["schema"]["foreignKeys"][0]["reference"][k] = ""
+            self.__assert_raises(dp(d))
+
+    def test_tracks(self, dp):
+        tracks_res = {
+            "name": names.TRACKS_TABLE_NAME,
+            "path": TRACKS_PATH,
+            "schema": {
+                "fields": [
+                    {"name": names.TRACK_NAME},
+                    {"name": names.LINK_NAME},
+                ],
+            },
+        }
+        d = deepcopy(JSON)
+        d["resources"].append(tracks_res)
+        validation.Validator().validate(dp(d))
+        for i in range(len(tracks_res["schema"]["fields"])):
+            d = deepcopy(JSON)
+            r = deepcopy(tracks_res)
+            del r["schema"]["fields"][i]
+            d["resources"].append(r)
             self.__assert_raises(dp(d))
 
     def __res_by_name(self, name):
