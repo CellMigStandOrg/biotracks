@@ -33,5 +33,5 @@ RUN true \
 	&& true
 
 USER dp
-RUN find examples -name '*.json' -print0 | xargs -n 1 -0 python scripts/validate_dpkg.py
+RUN find examples -name '*.json' -print0 | xargs -n 1 -0 python scripts/validate_dpkg.py --log-level=DEBUG
 CMD ["make", "test"]

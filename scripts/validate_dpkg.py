@@ -32,7 +32,7 @@ import sys
 import argparse
 
 from biotracks.validation import Validator
-from biotracks.utils import get_log_level
+from biotracks.utils import get_log_level, get_logger
 
 
 def log_level(s):
@@ -53,8 +53,10 @@ def make_parser():
 def main(argv):
     parser = make_parser()
     args = parser.parse_args(argv[1:])
+    logger = get_logger('validate_dpkg', level=args.log_level, f=sys.stdout)
     validator = Validator(log_level=args.log_level)
     validator.validate(args.dp_fn)
+    logger.debug("%r: OK" % (args.dp_fn))
 
 
 if __name__ == "__main__":
