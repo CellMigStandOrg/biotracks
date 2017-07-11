@@ -34,6 +34,7 @@ from jsontableschema import infer
 from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME
 
 
+# https://specs.frictionlessdata.io/data-package/#metadata
 NAME_PATTERN = re.compile(r"^[a-z0-9_.-]+$")
 
 
