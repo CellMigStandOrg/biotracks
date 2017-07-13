@@ -24,48 +24,40 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
-import os
-import configparser
+"""\
+Validate a CMSO datapackage.
+"""
 
-import datapackage
-import pytest
+import sys
+import argparse
 
-from biotracks import createdp, names
-from .common import EXAMPLES_DIR, RELPATHS
-
-
-@pytest.fixture()
-def data():
-    def make_data(fmt):
-        base_dir = os.path.join(EXAMPLES_DIR, fmt, *RELPATHS[fmt][:-1])
-        dp_dir = os.path.join(base_dir, 'dp')
-        dp_fn = os.path.join(dp_dir, 'dp.json')
-        dp = datapackage.DataPackage(dp_fn)
-        conf_fn = os.path.join(base_dir, 'biotracks.ini')
-        conf = configparser.ConfigParser()
-        conf.read(conf_fn)
-        return {'dp': dp, 'dp_dir': dp_dir, 'conf': conf}
-    return make_data
+from biotracks.validation import Validator
+from biotracks.utils import get_log_level, get_logger
 
 
-class TestCreatedp(object):
+def log_level(s):
+    try:
+        return get_log_level(s)
+    except ValueError as e:
+        raise argparse.ArgumentTypeError(e.message)
 
-    def test_icy(self, data):
-        self.__check_dps(data('ICY'))
 
-    def test_cellmia(self, data):
-        self.__check_dps(data('CELLMIA'))
+def make_parser():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('dp_fn', metavar="JSON_FILE")
+    parser.add_argument('--log-level', metavar='LEVEL', type=log_level,
+                        default='INFO', help='logging level')
+    return parser
 
-    def test_cellprofiler(self, data):
-        self.__check_dps(data('CellProfiler'))
 
-    def test_trackmate(self, data):
-        self.__check_dps(data('TrackMate'))
+def main(argv):
+    parser = make_parser()
+    args = parser.parse_args(argv[1:])
+    logger = get_logger('validate_dpkg', level=args.log_level, f=sys.stdout)
+    validator = Validator(log_level=args.log_level)
+    validator.validate(args.dp_fn)
+    logger.debug("%r: OK" % (args.dp_fn))
 
-    def __check_dps(self, d):
-        tld = d['conf']['TOP_LEVEL_INFO']
-        dp = createdp.create_dpkg(tld, {}, d['dp_dir'], names.OBJECT_NAME)
-        assert dp.to_dict() == d['dp'].to_dict()
-        tld['name'] = "CMSO_TRACKS"
-        with pytest.raises(ValueError):
-            createdp.create_dpkg(tld, {}, d['dp_dir'], names.OBJECT_NAME)
+
+if __name__ == "__main__":
+    main(sys.argv)
