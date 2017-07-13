@@ -31,7 +31,7 @@ import re
 
 import datapackage as dp
 from jsontableschema import infer
-from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME
+from . import cmso
 
 
 # https://specs.frictionlessdata.io/data-package/#metadata
@@ -71,7 +71,7 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
                        primary_key=joint_id)
 
     myDP.descriptor['resources'].append(
-        {"name": OBJECTS_TABLE_NAME,
+        {"name": cmso.OBJECTS_TABLE,
          "path": path,
          "schema": schema,
          }
@@ -88,13 +88,13 @@ def create_dpkg(top_level_dict, dict_, directory, joint_id):
             "fields": joint_id,
             "reference": {
                 "datapackage": "",
-                "resource": OBJECTS_TABLE_NAME,
+                "resource": cmso.OBJECTS_TABLE,
                 "fields": joint_id
             }
         }]
 
     myDP.descriptor['resources'].append(
-        {"name": LINKS_TABLE_NAME,
+        {"name": cmso.LINKS_TABLE,
          "path": path,
          "schema": schema,
          }

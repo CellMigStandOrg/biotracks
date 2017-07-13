@@ -30,7 +30,7 @@ import configparser
 import pandas as pd
 import pytest
 
-from biotracks import names
+from biotracks import cmso
 from biotracks.pushtopandas import push_to_pandas
 from .common import (
     EXAMPLES_DIR, RELPATHS, get_obj_dict, get_link_dict, get_track_dict
@@ -69,9 +69,9 @@ class TestPushToPandas(object):
         self.__check_dicts(data('TrackMate'))
 
     def __check_dicts(self, d):
-        obj_id = names.OBJECT_NAME
-        link_id = names.LINK_NAME
-        track_id = names.TRACK_NAME
+        obj_id = cmso.OBJECT_ID
+        link_id = cmso.LINK_ID
+        track_id = cmso.TRACK_ID
         ret = push_to_pandas(d['dp_dir'], obj_id)
         exp_track_dict = get_track_dict(d['tracks_df'], link_id, track_id)
         track_dict = get_track_dict(ret['tracks'], link_id, track_id)

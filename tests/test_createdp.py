@@ -30,7 +30,7 @@ import configparser
 import datapackage
 import pytest
 
-from biotracks import createdp, names
+from biotracks import createdp, cmso
 from .common import EXAMPLES_DIR, RELPATHS
 
 
@@ -64,8 +64,8 @@ class TestCreatedp(object):
 
     def __check_dps(self, d):
         tld = d['conf']['TOP_LEVEL_INFO']
-        dp = createdp.create_dpkg(tld, {}, d['dp_dir'], names.OBJECT_NAME)
+        dp = createdp.create_dpkg(tld, {}, d['dp_dir'], cmso.OBJECT_ID)
         assert dp.to_dict() == d['dp'].to_dict()
         tld['name'] = "CMSO_TRACKS"
         with pytest.raises(ValueError):
-            createdp.create_dpkg(tld, {}, d['dp_dir'], names.OBJECT_NAME)
+            createdp.create_dpkg(tld, {}, d['dp_dir'], cmso.OBJECT_ID)

@@ -33,7 +33,7 @@ except ImportError:
 import pandas as pd
 
 from .utils import get_logger
-from .names import OBJECTS_TABLE_NAME, LINKS_TABLE_NAME, LINK_NAME, TRACK_NAME
+from . import cmso
 
 
 def push_to_pandas(directory, object_id_cmso, log_level=None):
@@ -46,18 +46,18 @@ def push_to_pandas(directory, object_id_cmso, log_level=None):
     logger = get_logger('push_to_pandas', level=log_level)
     descr = directory + os.sep + 'dp.json'
     storage = dp.push_datapackage(descriptor=descr, backend='pandas')
-    objects = storage[convert_path("objects.csv", OBJECTS_TABLE_NAME)]
-    links = storage[convert_path("links.csv", LINKS_TABLE_NAME)]
+    objects = storage[convert_path("objects.csv", cmso.OBJECTS_TABLE)]
+    links = storage[convert_path("links.csv", cmso.LINKS_TABLE)]
     objects.reset_index(inplace=True)
 
     # aggregation to construct tracks
     tracks_dict = {}
     list_ = []
     TRACK_ID = -1
-    for link in links[LINK_NAME].unique():
-        tmp = links[links[LINK_NAME] == link]
+    for link in links[cmso.LINK_ID].unique():
+        tmp = links[links[cmso.LINK_ID] == link]
         rest = links[
-            (links[LINK_NAME] != link) & (~links[LINK_NAME].isin(list_))
+            (links[cmso.LINK_ID] != link) & (~links[cmso.LINK_ID].isin(list_))
         ]
         ind = rest[object_id_cmso].isin(tmp[object_id_cmso])
         # no shared spots
@@ -76,7 +76,9 @@ def push_to_pandas(directory, object_id_cmso, log_level=None):
                         TRACK_ID += 1
                         tracks_dict[TRACK_ID] = []
                     tracks_dict[TRACK_ID].append(link)
-                    tracks_dict[TRACK_ID].append(rest.iloc[index][LINK_NAME])
+                    tracks_dict[TRACK_ID].append(
+                        rest.iloc[index][cmso.LINK_ID]
+                    )
         list_.append(link)
 
     # get unique links and construct tracks dataframe
@@ -89,5 +91,5 @@ def push_to_pandas(directory, object_id_cmso, log_level=None):
     for key, value in tracks_dict_unique.items():
         for link in value:
             tracks = tracks.append([[key, link]], ignore_index=True)
-    tracks.columns = [TRACK_NAME, LINK_NAME]
+    tracks.columns = [cmso.TRACK_ID, cmso.LINK_ID]
     return {'objects': objects, 'links': links, 'tracks': tracks}

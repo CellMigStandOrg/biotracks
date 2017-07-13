@@ -24,16 +24,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
-PACKAGE_NAME = "cmso_tracks"
+"""\
+Define standard property names used in CMSO data packages.
+"""
 
-OBJECTS_TABLE_NAME = "cmso_objects_table"
-LINKS_TABLE_NAME = "cmso_links_table"
-TRACKS_TABLE_NAME = "cmso_tracks_table"
+PACKAGE = "cmso_tracks"
 
-X_COORD_NAME = "cmso_x_coord"
-Y_COORD_NAME = "cmso_y_coord"
-Z_COORD_NAME = "cmso_z_coord"
-FRAME_NAME = "cmso_frame_id"
-OBJECT_NAME = "cmso_object_id"
-LINK_NAME = "cmso_link_id"
-TRACK_NAME = "cmso_track_id"
+OBJECTS_TABLE = "cmso_objects_table"
+LINKS_TABLE = "cmso_links_table"
+TRACKS_TABLE = "cmso_tracks_table"
+
+X_COORD = "cmso_x_coord"
+Y_COORD = "cmso_y_coord"
+Z_COORD = "cmso_z_coord"
+FRAME_ID = "cmso_frame_id"
+OBJECT_ID = "cmso_object_id"
+LINK_ID = "cmso_link_id"
+TRACK_ID = "cmso_track_id"

@@ -31,10 +31,7 @@ import pandas as pd
 import xlrd
 
 from .utils import get_logger
-from .names import (
-    X_COORD_NAME, Y_COORD_NAME, Z_COORD_NAME,
-    FRAME_NAME, OBJECT_NAME, LINK_NAME
-)
+from . import cmso
 
 
 class TracksReader(object):
@@ -56,7 +53,7 @@ class TrackMateReader(TracksReader):
         spots_dict = self.read_spots()
         objects_df = pd.DataFrame(
             [[k, v[0], v[1], v[2]] for k, v in spots_dict.items()],
-            columns=[OBJECT_NAME, FRAME_NAME, X_COORD_NAME, Y_COORD_NAME]
+            columns=[cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD]
         )
         ordered_edges_df = self.read_edges(spots_dict)
         links_df = self.read_links(ordered_edges_df)
@@ -200,17 +197,17 @@ class TrackMateReader(TracksReader):
         for key, value in links_dict_unique.items():
             for spot in value:
                 links_df = links_df.append([[key, spot]], ignore_index=True)
-        links_df.columns = [LINK_NAME, OBJECT_NAME]
+        links_df.columns = [cmso.LINK_ID, cmso.OBJECT_ID]
         return links_df
 
 
 class CellProfilerReader(TracksReader):
 
     def read(self):
-        self.x = self.conf.get(X_COORD_NAME)
-        self.y = self.conf.get(Y_COORD_NAME)
-        self.frame = self.conf.get(FRAME_NAME)
-        self.obj_id = self.conf.get(OBJECT_NAME)
+        self.x = self.conf.get(cmso.X_COORD)
+        self.y = self.conf.get(cmso.Y_COORD)
+        self.frame = self.conf.get(cmso.FRAME_ID)
+        self.obj_id = self.conf.get(cmso.OBJECT_ID)
         # parse the digits used for the tracking settings (e.g. 15)
         digits = self.x.split('_')[2]
         self.track_id = 'TrackObjects_Label_' + digits
@@ -234,7 +231,7 @@ class CellProfilerReader(TracksReader):
                 columns=[self.obj_id, self.frame, self.x, self.y]
             )
         objects_df.columns = [
-            OBJECT_NAME, FRAME_NAME, X_COORD_NAME, Y_COORD_NAME
+            cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD
         ]
         return cp_df, objects_df
 
@@ -270,7 +267,7 @@ class CellProfilerReader(TracksReader):
         for key, value in links_dict.items():
             for object_ in value:
                 links_df = links_df.append([[key, object_]])
-        links_df.columns = [LINK_NAME, OBJECT_NAME]
+        links_df.columns = [cmso.LINK_ID, cmso.OBJECT_ID]
         return links_df
 
 
@@ -293,11 +290,10 @@ class IcyReader(TracksReader):
         obj_df = pd.DataFrame(
             objects, columns=['OBJECT_ID', 't', 'x', 'y', 'z']
         )
-        obj_df.columns = [
-            OBJECT_NAME, FRAME_NAME, X_COORD_NAME, Y_COORD_NAME, Z_COORD_NAME
-        ]
+        obj_df.columns = [cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD,
+                          cmso.Y_COORD, cmso.Z_COORD]
         links_df = pd.DataFrame(links, columns=['LINK_ID', 'OBJECT_ID'])
-        links_df.columns = [LINK_NAME, OBJECT_NAME]
+        links_df.columns = [cmso.LINK_ID, cmso.OBJECT_ID]
         return obj_df, links_df
 
 
@@ -308,17 +304,16 @@ class CellmiaReader(TracksReader):
 
     def read(self):
         cellmia_link_id = "ID of track"
-        x = self.conf.get(X_COORD_NAME)
-        y = self.conf.get(Y_COORD_NAME)
-        frame_id = self.conf.get(FRAME_NAME)
+        x = self.conf.get(cmso.X_COORD)
+        y = self.conf.get(cmso.Y_COORD)
+        frame_id = self.conf.get(cmso.FRAME_ID)
         df = pd.read_csv(self.fname, sep=self.SEP, encoding=self.ENCODING,
                          usecols=[cellmia_link_id, frame_id, x, y])
         df.reset_index(inplace=True)
-        df.columns = [
-            OBJECT_NAME, LINK_NAME, FRAME_NAME, X_COORD_NAME, Y_COORD_NAME
-        ]
-        obj_df = df.drop(LINK_NAME, 1)
-        links_df = df.drop([FRAME_NAME, X_COORD_NAME, Y_COORD_NAME], 1)
+        df.columns = [cmso.OBJECT_ID, cmso.LINK_ID, cmso.FRAME_ID,
+                      cmso.X_COORD, cmso.Y_COORD]
+        obj_df = df.drop(cmso.LINK_ID, 1)
+        links_df = df.drop([cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD], 1)
         return obj_df, links_df
 
 
