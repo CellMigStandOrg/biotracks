@@ -83,13 +83,10 @@ def main(argv):
         logger.info('Trying default config file location: "%s"', args.config)
     if not os.path.isfile(args.config):
         logger.info('Config file not present, using defaults')
-        top_level_dict = {'name': cmso.PACKAGE}
-        track_dict = {}
+        conf = {'TOP_LEVEL_INFO': {'name': cmso.PACKAGE}, 'TRACKING_DATA': {}}
     else:
         conf = configparser.ConfigParser()
         conf.read(args.config)
-        top_level_dict = conf['TOP_LEVEL_INFO']
-        track_dict = conf['TRACKING_DATA']
 
     joint_id = cmso.OBJECT_ID
     link_id = cmso.LINK_ID
@@ -97,7 +94,7 @@ def main(argv):
 
     # read input file
     reader = readfile.TracksReader(
-        args.track_fn, conf=track_dict, log_level=args.log_level
+        args.track_fn, conf=conf, log_level=args.log_level
     )
     reader.read()
     dict_ = {'objects': reader.objects, 'links': reader.links}
@@ -110,7 +107,9 @@ def main(argv):
         v.to_csv(directory + os.sep + k + '.csv',
                  index=False, quoting=csv.QUOTE_NONE)
     logger.info('tabular files written to "%s"', directory)
-    dp = createdp.create_dpkg(top_level_dict, dict_, directory, joint_id)
+    dp = createdp.create_dpkg(
+        conf['TOP_LEVEL_INFO'], dict_, directory, joint_id
+    )
     # write the data package representation
     with open(directory + os.sep + 'dp.json', 'w') as f_json:
         f_json.write(to_json(dp) + '\n')

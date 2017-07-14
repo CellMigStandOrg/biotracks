@@ -218,10 +218,10 @@ class TrackMateReader(AbstractReader):
 class CellProfilerReader(AbstractReader):
 
     def read(self):
-        self.x = self.conf.get(cmso.X_COORD)
-        self.y = self.conf.get(cmso.Y_COORD)
-        self.frame = self.conf.get(cmso.FRAME_ID)
-        self.obj_id = self.conf.get(cmso.OBJECT_ID)
+        self.x = self.conf["TRACKING_DATA"].get(cmso.X_COORD)
+        self.y = self.conf["TRACKING_DATA"].get(cmso.Y_COORD)
+        self.frame = self.conf["TRACKING_DATA"].get(cmso.FRAME_ID)
+        self.obj_id = self.conf["TRACKING_DATA"].get(cmso.OBJECT_ID)
         # parse the digits used for the tracking settings (e.g. 15)
         digits = self.x.split('_')[2]
         self.track_id = 'TrackObjects_Label_' + digits
@@ -316,9 +316,9 @@ class CellmiaReader(AbstractReader):
 
     def read(self):
         cellmia_link_id = "ID of track"
-        x = self.conf.get(cmso.X_COORD)
-        y = self.conf.get(cmso.Y_COORD)
-        frame_id = self.conf.get(cmso.FRAME_ID)
+        x = self.conf["TRACKING_DATA"].get(cmso.X_COORD)
+        y = self.conf["TRACKING_DATA"].get(cmso.Y_COORD)
+        frame_id = self.conf["TRACKING_DATA"].get(cmso.FRAME_ID)
         df = pd.read_csv(self.fname, sep=self.SEP, encoding=self.ENCODING,
                          usecols=[cellmia_link_id, frame_id, x, y])
         df.reset_index(inplace=True)

@@ -42,7 +42,7 @@ def data():
         conf_fn = os.path.join(base_dir, "biotracks.ini")
         conf = configparser.ConfigParser()
         conf.read(conf_fn)
-        reader = readfile.TracksReader(in_fn, conf=conf['TRACKING_DATA'])
+        reader = readfile.TracksReader(in_fn, conf=conf)
         d = {'reader': reader}
         for k in 'objects', 'links':
             d['%s_path' % k] = os.path.join(base_dir, 'dp', '%s.csv' % k)
