@@ -42,12 +42,10 @@ def data():
         conf_fn = os.path.join(base_dir, "biotracks.ini")
         conf = configparser.ConfigParser()
         conf.read(conf_fn)
-        d = readfile.read_file(in_fn, conf['TRACKING_DATA'])
-        assert set(d) == set(['objects', 'links'])
-        for k in list(d):
-            assert type(d[k]) is pd.DataFrame
+        reader = readfile.TracksReader(in_fn, conf=conf['TRACKING_DATA'])
+        d = {'reader': reader}
+        for k in 'objects', 'links':
             d['%s_path' % k] = os.path.join(base_dir, 'dp', '%s.csv' % k)
-        d['conf'] = conf
         return d
     return make_data
 
@@ -67,14 +65,20 @@ class TestReadFile(object):
         self.__check_dicts(data('TrackMate'))
 
     def __check_dicts(self, d):
+        reader = d['reader']
+        for name in 'objects', 'links':
+            assert getattr(reader, name) is None
+        reader.read()
+        for name in 'objects', 'links':
+            assert type(getattr(reader, name) is pd.DataFrame)
         obj_id, link_id = cmso.OBJECT_ID, cmso.LINK_ID
         exp_link_dict = get_link_dict(
             pd.read_csv(d['links_path']), obj_id, link_id
         )
-        link_dict = get_link_dict(d['links'], obj_id, link_id)
+        link_dict = get_link_dict(reader.links, obj_id, link_id)
         assert link_dict == exp_link_dict
         exp_obj_dict = get_obj_dict(pd.read_csv(d['objects_path']), obj_id)
-        obj_dict = get_obj_dict(d['objects'], obj_id)
+        obj_dict = get_obj_dict(reader.objects, obj_id)
         assert obj_dict.keys() == exp_obj_dict.keys()
         for k, v in exp_obj_dict.items():
             assert obj_dict[k] == pytest.approx(v)

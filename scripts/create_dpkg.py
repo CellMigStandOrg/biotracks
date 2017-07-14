@@ -95,10 +95,12 @@ def main(argv):
     link_id = cmso.LINK_ID
     track_id = cmso.TRACK_ID
 
-    # read file - returns a dictionary with objects and links
-    dict_ = readfile.read_file(
-        args.track_fn, track_dict, log_level=args.log_level
+    # read input file
+    reader = readfile.TracksReader(
+        args.track_fn, conf=track_dict, log_level=args.log_level
     )
+    reader.read()
+    dict_ = {'objects': reader.objects, 'links': reader.links}
     # make directory for the csv and the dp representation
     directory = args.out_dir
     if not os.path.exists(directory):

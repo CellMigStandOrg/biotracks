@@ -26,6 +26,7 @@
 
 import os
 import xml.etree.ElementTree as ET
+from abc import ABCMeta, abstractmethod
 
 import pandas as pd
 import xlrd
@@ -34,7 +35,7 @@ from .utils import get_logger
 from . import cmso
 
 
-class TracksReader(object):
+class AbstractReader(metaclass=ABCMeta):
 
     def __init__(self, fname, conf=None, log_level=None):
         self.fname = fname
@@ -42,22 +43,35 @@ class TracksReader(object):
         reader_name = self.__class__.__name__
         self.logger = get_logger(reader_name, level=log_level)
         self.logger.info('%s Reading "%s"', reader_name, fname)
+        self._objects = None
+        self._links = None
+
+    @abstractmethod
+    def read(self):
+        return
+
+    @property
+    def objects(self):
+        return self._objects
+
+    @property
+    def links(self):
+        return self._links
 
 
-class TrackMateReader(TracksReader):
+class TrackMateReader(AbstractReader):
 
     def read(self):
         self.root = ET.parse(self.fname).getroot()
         self.logger.info('Reading a TrackMate XML file version %s',
                          self.root.attrib.get('version'))
         spots_dict = self.read_spots()
-        objects_df = pd.DataFrame(
+        self._objects = pd.DataFrame(
             [[k, v[0], v[1], v[2]] for k, v in spots_dict.items()],
             columns=[cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD]
         )
         ordered_edges_df = self.read_edges(spots_dict)
-        links_df = self.read_links(ordered_edges_df)
-        return objects_df, links_df
+        self._links = self.read_links(ordered_edges_df)
 
     def read_spots(self):
         spots_dict = {}
@@ -201,7 +215,7 @@ class TrackMateReader(TracksReader):
         return links_df
 
 
-class CellProfilerReader(TracksReader):
+class CellProfilerReader(AbstractReader):
 
     def read(self):
         self.x = self.conf.get(cmso.X_COORD)
@@ -213,9 +227,8 @@ class CellProfilerReader(TracksReader):
         self.track_id = 'TrackObjects_Label_' + digits
         self.parent_obj_id = 'TrackObjects_ParentObjectNumber_' + digits
         self.parent_img_id = 'TrackObjects_ParentImageNumber_' + digits
-        cp_df, objects_df = self.read_objects()
-        links_df = self.read_links(cp_df)
-        return objects_df, links_df
+        cp_df, self._objects = self.read_objects()
+        self._links = self.read_links(cp_df)
 
     def read_objects(self):
         objects_dict = {}
@@ -271,7 +284,7 @@ class CellProfilerReader(TracksReader):
         return links_df
 
 
-class IcyReader(TracksReader):
+class IcyReader(AbstractReader):
 
     def read(self):
         book = xlrd.open_workbook(self.fname)
@@ -287,17 +300,16 @@ class IcyReader(TracksReader):
                 objects.append([obj] + values[2:6])
                 links.append([track, obj])
                 obj += 1
-        obj_df = pd.DataFrame(
+        self._objects = pd.DataFrame(
             objects, columns=['OBJECT_ID', 't', 'x', 'y', 'z']
         )
-        obj_df.columns = [cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD,
-                          cmso.Y_COORD, cmso.Z_COORD]
-        links_df = pd.DataFrame(links, columns=['LINK_ID', 'OBJECT_ID'])
-        links_df.columns = [cmso.LINK_ID, cmso.OBJECT_ID]
-        return obj_df, links_df
+        self._objects.columns = [cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD,
+                                 cmso.Y_COORD, cmso.Z_COORD]
+        self._links = pd.DataFrame(links, columns=['LINK_ID', 'OBJECT_ID'])
+        self._links.columns = [cmso.LINK_ID, cmso.OBJECT_ID]
 
 
-class CellmiaReader(TracksReader):
+class CellmiaReader(AbstractReader):
 
     ENCODING = "iso-8859-1"
     SEP = "\t"
@@ -312,28 +324,39 @@ class CellmiaReader(TracksReader):
         df.reset_index(inplace=True)
         df.columns = [cmso.OBJECT_ID, cmso.LINK_ID, cmso.FRAME_ID,
                       cmso.X_COORD, cmso.Y_COORD]
-        obj_df = df.drop(cmso.LINK_ID, 1)
-        links_df = df.drop([cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD], 1)
-        return obj_df, links_df
+        self._objects = df.drop(cmso.LINK_ID, 1)
+        self._links = df.drop([cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD], 1)
 
 
-def read_file(fname, track_dict, log_level=None):
-    logger = get_logger('read_file', level=log_level)
-    _, ext = os.path.splitext(fname)
-    if ext == '.xls':
-        objects, links = IcyReader(fname, log_level=log_level).read()
-    elif ext == '.xml':
-        objects, links = TrackMateReader(fname, log_level=log_level).read()
-    elif ext == '.csv':
-        objects, links = CellProfilerReader(
-            fname, conf=track_dict, log_level=log_level
-        ).read()
-    elif ext == '.txt':
-        objects, links = CellmiaReader(
-            fname, conf=track_dict, log_level=log_level
-        ).read()
-    else:
-        msg = '%r: unknown format: %r' % (fname, ext)
-        logger.error(msg)
-        raise RuntimeError(msg)
-    return {'objects': objects, 'links': links}
+class TracksReader(object):
+
+    def __init__(self, fname, conf, log_level=None):
+        logger = get_logger(self.__class__.__name__, level=log_level)
+        _, ext = os.path.splitext(fname)
+        if ext == '.xls':
+            self.reader = IcyReader(fname, log_level=log_level)
+        elif ext == '.xml':
+            self.reader = TrackMateReader(fname, log_level=log_level)
+        elif ext == '.csv':
+            self.reader = CellProfilerReader(
+                fname, conf=conf, log_level=log_level
+            )
+        elif ext == '.txt':
+            self.reader = CellmiaReader(
+                fname, conf=conf, log_level=log_level
+            )
+        else:
+            msg = '%r: unknown format: %r' % (fname, ext)
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+    def read(self):
+        self.reader.read()
+
+    @property
+    def objects(self):
+        return self.reader.objects
+
+    @property
+    def links(self):
+        return self.reader.links
