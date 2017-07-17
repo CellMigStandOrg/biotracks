@@ -28,21 +28,22 @@ import datapackage
 import datapackage.registry
 import datapackage.exceptions
 
-from . import names
+from . import cmso
 from .utils import get_logger
 
 
 REQUIRED_FIELDS = {
-    names.OBJECTS_TABLE_NAME: {names.OBJECT_NAME, names.FRAME_NAME,
-                               names.X_COORD_NAME, names.Y_COORD_NAME},
-    names.LINKS_TABLE_NAME: {names.LINK_NAME, names.OBJECT_NAME},
-    names.TRACKS_TABLE_NAME: {names.TRACK_NAME, names.LINK_NAME},
+    cmso.OBJECTS_TABLE: {
+        cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD
+    },
+    cmso.LINKS_TABLE: {cmso.LINK_ID, cmso.OBJECT_ID},
+    cmso.TRACKS_TABLE: {cmso.TRACK_ID, cmso.LINK_ID},
 }
 
 FOREIGN_KEYS = [
-    {"fields": names.OBJECT_NAME,
-     "reference": {"fields": names.OBJECT_NAME,
-                   "resource": names.OBJECTS_TABLE_NAME}}
+    {"fields": cmso.OBJECT_ID,
+     "reference": {"fields": cmso.OBJECT_ID,
+                   "resource": cmso.OBJECTS_TABLE}}
 ]
 
 
@@ -73,19 +74,19 @@ class Validator(object):
             self.__error("data package must have at least two resources")
         res_map = dict((_.descriptor['name'], _) for _ in dp.resources)
         try:
-            objects = res_map[names.OBJECTS_TABLE_NAME]
+            objects = res_map[cmso.OBJECTS_TABLE]
         except KeyError:
             self.__error("objects table not found")
         else:
             self.validate_objects(objects.descriptor)
         try:
-            links = res_map[names.LINKS_TABLE_NAME]
+            links = res_map[cmso.LINKS_TABLE]
         except KeyError:
             self.__error("links table not found")
         else:
             self.validate_links(links.descriptor)
         try:
-            tracks = res_map[names.TRACKS_TABLE_NAME]
+            tracks = res_map[cmso.TRACKS_TABLE]
         except KeyError:
             pass
         else:
@@ -96,12 +97,12 @@ class Validator(object):
             pk = objects["schema"]["primaryKey"]
         except KeyError:
             self.__error("objects table schema has no primary key")
-        if pk != names.OBJECT_NAME:
+        if pk != cmso.OBJECT_ID:
             self.__error(
-                "objects table primary key must be %r" % (names.OBJECT_NAME,)
+                "objects table primary key must be %r" % (cmso.OBJECT_ID,)
             )
         by_name = self.__check_required_fields(objects)
-        id_field = by_name[names.OBJECT_NAME]
+        id_field = by_name[cmso.OBJECT_ID]
         try:
             constraints = id_field["constraints"]
         except KeyError:
@@ -133,9 +134,9 @@ class Validator(object):
             ref = fk["reference"]
         except KeyError as e:
             self.__error("missing property in foreignKeys: %r" % e.args)
-        if fields != names.OBJECT_NAME:
+        if fields != cmso.OBJECT_ID:
             self.__error(
-                "foreignKeys fields must be %r" % (names.OBJECT_NAME,)
+                "foreignKeys fields must be %r" % (cmso.OBJECT_ID,)
             )
         try:
             ref_fields = ref["fields"]
@@ -144,14 +145,13 @@ class Validator(object):
             self.__error(
                 "missing property in foreignKeys reference: %r" % e.args
             )
-        if ref_fields != names.OBJECT_NAME:
+        if ref_fields != cmso.OBJECT_ID:
             self.__error(
-                "foreignKeys ref fields must be %r" % (names.OBJECT_NAME,)
+                "foreignKeys ref fields must be %r" % (cmso.OBJECT_ID,)
             )
-        if ref_res != names.OBJECTS_TABLE_NAME:
+        if ref_res != cmso.OBJECTS_TABLE:
             self.__error(
-                "foreignKeys ref resource must be %r" % (
-                    names.OBJECTS_TABLE_NAME,)
+                "foreignKeys ref resource must be %r" % (cmso.OBJECTS_TABLE,)
             )
 
     def __check_required_fields(self, descriptor):

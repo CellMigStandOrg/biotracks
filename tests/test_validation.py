@@ -31,38 +31,38 @@ from copy import deepcopy
 import pytest
 from datapackage.exceptions import ValidationError
 
-from biotracks import validation, names
+from biotracks import validation, cmso
 
 OBJECTS_PATH = "objects.csv"
 LINKS_PATH = "links.csv"
 TRACKS_PATH = "tracks.csv"
 JSON = {
-    "name": names.PACKAGE_NAME,
+    "name": cmso.PACKAGE,
     "resources": [
         {
-            "name": names.OBJECTS_TABLE_NAME,
+            "name": cmso.OBJECTS_TABLE,
             "path": OBJECTS_PATH,
             "schema": {
                 "fields": [
-                    {"name": names.OBJECT_NAME,
+                    {"name": cmso.OBJECT_ID,
                      "constraints": {"unique": True}},
-                    {"name": names.FRAME_NAME},
-                    {"name": names.X_COORD_NAME},
-                    {"name": names.Y_COORD_NAME},
+                    {"name": cmso.FRAME_ID},
+                    {"name": cmso.X_COORD},
+                    {"name": cmso.Y_COORD},
                 ],
-                "primaryKey": names.OBJECT_NAME,
+                "primaryKey": cmso.OBJECT_ID,
             }
         },
         {
-            "name": names.LINKS_TABLE_NAME,
+            "name": cmso.LINKS_TABLE,
             "path": LINKS_PATH,
             "schema": {
-                "fields": [{"name": names.LINK_NAME},
-                           {"name": names.OBJECT_NAME}],
+                "fields": [{"name": cmso.LINK_ID},
+                           {"name": cmso.OBJECT_ID}],
                 "foreignKeys": [
-                    {"fields": names.OBJECT_NAME,
-                     "reference": {"fields": names.OBJECT_NAME,
-                                   "resource": names.OBJECTS_TABLE_NAME}}
+                    {"fields": cmso.OBJECT_ID,
+                     "reference": {"fields": cmso.OBJECT_ID,
+                                   "resource": cmso.OBJECTS_TABLE}}
                 ]
             }
         }
@@ -71,13 +71,13 @@ JSON = {
 
 CSV = {
     OBJECTS_PATH: [
-        [names.OBJECT_NAME, names.FRAME_NAME,
-         names.X_COORD_NAME, names.Y_COORD_NAME],
+        [cmso.OBJECT_ID, cmso.FRAME_ID,
+         cmso.X_COORD, cmso.Y_COORD],
         [0, 1, 0.4, 0.5],
         [1, 2, 0.5, 0.6],
     ],
     LINKS_PATH: [
-        [names.LINK_NAME, names.OBJECT_NAME],
+        [cmso.LINK_ID, cmso.OBJECT_ID],
         [0, 0],
         [0, 1],
     ],
@@ -132,7 +132,7 @@ class TestValidation(object):
                 self.__assert_raises(dp(d))
 
     def test_primary_key(self, dp):
-        obj_i, obj_res = self.__res_by_name(names.OBJECTS_TABLE_NAME)
+        obj_i, obj_res = self.__res_by_name(cmso.OBJECTS_TABLE)
         d = deepcopy(JSON)
         del d["resources"][obj_i]["schema"]["primaryKey"]
         self.__assert_raises(dp(d))
@@ -141,9 +141,9 @@ class TestValidation(object):
         self.__assert_raises(dp(d))
 
     def test_constraints(self, dp):
-        i, r = self.__res_by_name(names.OBJECTS_TABLE_NAME)
+        i, r = self.__res_by_name(cmso.OBJECTS_TABLE)
         j = [_ for (_, f) in enumerate(r["schema"]["fields"])
-             if f["name"] == names.OBJECT_NAME][0]
+             if f["name"] == cmso.OBJECT_ID][0]
         d = deepcopy(JSON)
         del d["resources"][i]["schema"]["fields"][j]["constraints"]
         self.__assert_raises(dp(d))
@@ -155,7 +155,7 @@ class TestValidation(object):
         self.__assert_raises(dp(d))
 
     def test_foreign_keys(self, dp):
-        i, r = self.__res_by_name(names.LINKS_TABLE_NAME)
+        i, r = self.__res_by_name(cmso.LINKS_TABLE)
         d = deepcopy(JSON)
         del d["resources"][i]["schema"]["foreignKeys"]
         self.__assert_raises(dp(d))
@@ -169,12 +169,12 @@ class TestValidation(object):
 
     def test_tracks(self, dp):
         tracks_res = {
-            "name": names.TRACKS_TABLE_NAME,
+            "name": cmso.TRACKS_TABLE,
             "path": TRACKS_PATH,
             "schema": {
                 "fields": [
-                    {"name": names.TRACK_NAME},
-                    {"name": names.LINK_NAME},
+                    {"name": cmso.TRACK_ID},
+                    {"name": cmso.LINK_ID},
                 ],
             },
         }

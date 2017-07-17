@@ -42,7 +42,7 @@ import biotracks.createdp as createdp
 import biotracks.plot as plot
 import biotracks.pushtopandas as pushtopandas
 import biotracks.readfile as readfile
-import biotracks.names as names
+import biotracks.cmso as cmso
 from biotracks.utils import get_log_level, get_logger
 
 
@@ -83,7 +83,7 @@ def main(argv):
         logger.info('Trying default config file location: "%s"', args.config)
     if not os.path.isfile(args.config):
         logger.info('Config file not present, using defaults')
-        top_level_dict = {'name': names.PACKAGE_NAME}
+        top_level_dict = {'name': cmso.PACKAGE}
         track_dict = {}
     else:
         conf = configparser.ConfigParser()
@@ -91,9 +91,9 @@ def main(argv):
         top_level_dict = conf['TOP_LEVEL_INFO']
         track_dict = conf['TRACKING_DATA']
 
-    joint_id = names.OBJECT_NAME
-    link_id = names.LINK_NAME
-    track_id = names.TRACK_NAME
+    joint_id = cmso.OBJECT_ID
+    link_id = cmso.LINK_ID
+    track_id = cmso.TRACK_ID
 
     # read file - returns a dictionary with objects and links
     dict_ = readfile.read_file(
@@ -134,9 +134,9 @@ def main(argv):
         objects_links, tracks, how='outer', on=link_id
     )
 
-    x = names.X_COORD_NAME
-    y = names.Y_COORD_NAME
-    frame = names.FRAME_NAME
+    x = cmso.X_COORD
+    y = cmso.Y_COORD
+    frame = cmso.FRAME_ID
     # basic visualizations
     objects_links_tracks.sort_values(frame, axis=0, inplace=True)
     cum_df = plot.compute_cumulative_displacements(

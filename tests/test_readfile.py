@@ -30,7 +30,7 @@ import configparser
 import pandas as pd
 import pytest
 
-from biotracks import readfile, names
+from biotracks import readfile, cmso
 from .common import EXAMPLES_DIR, RELPATHS, get_obj_dict, get_link_dict
 
 
@@ -67,7 +67,7 @@ class TestReadFile(object):
         self.__check_dicts(data('TrackMate'))
 
     def __check_dicts(self, d):
-        obj_id, link_id = names.OBJECT_NAME, names.LINK_NAME
+        obj_id, link_id = cmso.OBJECT_ID, cmso.LINK_ID
         exp_link_dict = get_link_dict(
             pd.read_csv(d['links_path']), obj_id, link_id
         )
