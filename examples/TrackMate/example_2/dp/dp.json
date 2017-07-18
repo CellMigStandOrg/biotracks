@@ -2,6 +2,8 @@
     "author": "paola masuzzo",
     "author_email": "paola.masuzzo@email.com",
     "author_institute": "VIB",
+    "cmso_spatial_unit": "pixel",
+    "cmso_time_unit": "sec",
     "name": "cmso_tracks",
     "resources": [
         {

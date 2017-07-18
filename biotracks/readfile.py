@@ -69,6 +69,13 @@ class TrackMateReader(AbstractReader):
         self.root = ET.parse(self.fname).getroot()
         self.logger.info('Reading a TrackMate XML file version %s',
                          self.root.attrib.get('version'))
+        self.__model = self.root.find('Model')
+        self.conf[config.TOP_LEVEL].setdefault(
+            cmso.SPATIAL_UNIT, self.__model.attrib["spatialunits"]
+        )
+        self.conf[config.TOP_LEVEL].setdefault(
+            cmso.TIME_UNIT, self.__model.attrib["timeunits"]
+        )
         spots_dict = self.read_spots()
         self._objects = pd.DataFrame(
             [[k, v[0], v[1], v[2]] for k, v in spots_dict.items()],
@@ -79,7 +86,7 @@ class TrackMateReader(AbstractReader):
 
     def read_spots(self):
         spots_dict = {}
-        for child in self.root.find('Model'):
+        for child in self.__model:
             if child.tag == 'AllSpots':
                 spots = child
                 for spot_in_frame in spots.getchildren():
@@ -95,7 +102,7 @@ class TrackMateReader(AbstractReader):
     def read_edges(self, spots_dict):
         edges_dict = {}
         edge_id = 0
-        for child in self.root.find('Model'):
+        for child in self.__model:
             if child.tag == 'AllTracks':
                 tracks = child
                 for track in tracks.getchildren():
