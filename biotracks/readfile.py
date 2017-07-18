@@ -38,10 +38,10 @@ from . import cmso
 class AbstractReader(metaclass=ABCMeta):
 
     def __init__(self, fname, conf=None, log_level=None):
-        self.fname = fname
-        self.conf = conf or {}
         reader_name = self.__class__.__name__
         self.logger = get_logger(reader_name, level=log_level)
+        self.fname = fname
+        self.conf = conf or {}
         self.logger.info('%s Reading "%s"', reader_name, fname)
         self._objects = None
         self._links = None
@@ -334,9 +334,11 @@ class TracksReader(object):
         logger = get_logger(self.__class__.__name__, level=log_level)
         _, ext = os.path.splitext(fname)
         if ext == '.xls':
-            self.reader = IcyReader(fname, log_level=log_level)
+            self.reader = IcyReader(fname, conf=conf, log_level=log_level)
         elif ext == '.xml':
-            self.reader = TrackMateReader(fname, log_level=log_level)
+            self.reader = TrackMateReader(
+                fname, conf=conf, log_level=log_level
+            )
         elif ext == '.csv':
             self.reader = CellProfilerReader(
                 fname, conf=conf, log_level=log_level
@@ -352,6 +354,10 @@ class TracksReader(object):
 
     def read(self):
         self.reader.read()
+
+    @property
+    def conf(self):
+        return self.reader.conf
 
     @property
     def objects(self):

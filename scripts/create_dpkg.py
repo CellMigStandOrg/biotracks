@@ -28,10 +28,8 @@
 Convert a tracking software output file to a datapackage representation.
 """
 
-import csv
 import os
 import sys
-import json
 import configparser
 import argparse
 
@@ -48,10 +46,6 @@ from biotracks.utils import get_log_level, get_logger
 
 DEFAULT_CONFIG_BASENAME = 'biotracks.ini'
 DEFAULT_OUTPUT_BASENAME = 'dp'
-
-
-def to_json(dp):
-    return json.dumps(dp.to_dict(), indent=4, sort_keys=True)
 
 
 def log_level(s):
@@ -92,32 +86,15 @@ def main(argv):
     link_id = cmso.LINK_ID
     track_id = cmso.TRACK_ID
 
-    # read input file
     reader = readfile.TracksReader(
         args.track_fn, conf=conf, log_level=args.log_level
     )
     reader.read()
-    dict_ = {'objects': reader.objects, 'links': reader.links}
-    # make directory for the csv and the dp representation
-    directory = args.out_dir
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    # write the dataframes to csv
-    for k, v in dict_.items():
-        v.to_csv(directory + os.sep + k + '.csv',
-                 index=False, quoting=csv.QUOTE_NONE)
-    logger.info('tabular files written to "%s"', directory)
-    dp = createdp.create_dpkg(
-        conf['TOP_LEVEL_INFO'], dict_, directory, joint_id
-    )
-    # write the data package representation
-    with open(directory + os.sep + 'dp.json', 'w') as f_json:
-        f_json.write(to_json(dp) + '\n')
-    logger.info('json file written to "%s"', directory)
+    createdp.create(reader, args.out_dir, log_level=args.log_level)
 
     # push to pandas
     results_dict = pushtopandas.push_to_pandas(
-        directory, joint_id, log_level=args.log_level
+        args.out_dir, joint_id, log_level=args.log_level
     )
     logger.debug('Datapackage pushed to pandas')
 

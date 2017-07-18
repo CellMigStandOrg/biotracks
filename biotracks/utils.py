@@ -24,6 +24,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
+import os
+import errno
 import logging
 
 
@@ -75,3 +77,12 @@ def get_logger(name, level=None, f=None, mode='a'):
     handler.setFormatter(logging.Formatter(LOG_FORMAT))
     logger.addHandler(handler)
     return logger
+
+
+def mkdir_p(*paths):
+    for p in paths:
+        try:
+            os.makedirs(p)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise

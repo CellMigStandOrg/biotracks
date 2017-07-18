@@ -24,80 +24,73 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
+import json
 import csv
-import io
 import os
 import re
 
-import datapackage as dp
+import datapackage
 from jsontableschema import infer
 from . import cmso
+from .utils import get_logger, mkdir_p
 
 
 # https://specs.frictionlessdata.io/data-package/#metadata
 NAME_PATTERN = re.compile(r"^[a-z0-9_.-]+$")
+FOREIGN_KEYS = [{
+    "fields": cmso.OBJECT_ID,
+    "reference": {
+        "datapackage": "",
+        "resource": cmso.OBJECTS_TABLE,
+        "fields": cmso.OBJECT_ID
+    }
+}]
 
 
-def create_dpkg(top_level_dict, dict_, directory, joint_id):
-    """Create the datapackage representation.
+def infer_from_df(df, **kwargs):
+    # df.iterrows does not preserve types
+    h = df.head()
+    fields = list(df)
+    iterrows = ([str(h[_].values[i]) for _ in fields]
+                for i in range(h.shape[0]))
+    return infer(fields, iterrows, **kwargs)
 
-    Keyword arguments:
-    top_level_dict -- the dictionary with the TOP_LEVEL_INFO
-    dict_ -- the dictionary containing objects and links
-    directory -- the directory
-    joint_id -- the joint_identifier
-    """
+
+def to_json(dp):
+    return json.dumps(dp.to_dict(), indent=4, sort_keys=True)
+
+
+def create(reader, out_dir, log_level=None):
+    logger = get_logger("createdp.create", level=log_level)
+    top_level_dict = reader.conf["TOP_LEVEL_INFO"]
     try:
         name = top_level_dict["name"]
     except KeyError:
         raise ValueError("'name' is a required property")
     if not NAME_PATTERN.match(name):
         raise ValueError("invalid name: %r" % (name,))
-
-    myDP = dp.DataPackage()
-
+    dp = datapackage.DataPackage()
     for k, v in top_level_dict.items():
-        myDP.descriptor[k] = v
-
-    myDP.descriptor['resources'] = []
-
-    # the objects block #
-    key = 'objects'
-    path = key + '.csv'
-    with io.open(directory + os.sep + key + '.csv') as stream:
-        headers = stream.readline().rstrip('\n').split(',')
-        values = csv.reader(stream)
-        schema = infer(headers, values, row_limit=50,
-                       primary_key=joint_id)
-
-    myDP.descriptor['resources'].append(
-        {"name": cmso.OBJECTS_TABLE,
-         "path": path,
-         "schema": schema,
-         }
-    )
-
-    # the links block #
-    key = 'links'
-    path = key + '.csv'
-    with io.open(directory + os.sep + key + '.csv') as stream:
-        headers = stream.readline().rstrip('\n').split(',')
-        values = csv.reader(stream)
-        schema = infer(headers, values, row_limit=50)
-        schema['foreignKeys'] = [{
-            "fields": joint_id,
-            "reference": {
-                "datapackage": "",
-                "resource": cmso.OBJECTS_TABLE,
-                "fields": joint_id
-            }
-        }]
-
-    myDP.descriptor['resources'].append(
-        {"name": cmso.LINKS_TABLE,
-         "path": path,
-         "schema": schema,
-         }
-    )
-
-    return myDP
+        dp.descriptor[k] = v
+    dp.descriptor['resources'] = []
+    mkdir_p(out_dir)
+    logger.info("writing to '%s'", out_dir)
+    for a in "objects", "links":
+        out_bn = "%s.csv" % a
+        out_fn = os.path.join(out_dir, out_bn)
+        df = getattr(reader, a)
+        df.to_csv(out_fn, index=False, quoting=csv.QUOTE_NONE)
+        if a == "objects":
+            name = cmso.OBJECTS_TABLE
+            infer_kwargs = {"primary_key": cmso.OBJECT_ID}
+        else:
+            name = cmso.LINKS_TABLE
+            infer_kwargs = {}
+        schema = infer_from_df(df, **infer_kwargs)
+        if a == "links":
+            schema['foreignKeys'] = FOREIGN_KEYS
+        res = {"name": name, "path": out_bn, "schema": schema}
+        dp.descriptor['resources'].append(res)
+    with open(os.path.join(out_dir, 'dp.json'), 'w') as f:
+        f.write(to_json(dp) + '\n')
+    return dp
