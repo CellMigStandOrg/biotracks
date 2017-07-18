@@ -52,10 +52,14 @@ class AbstractReader(metaclass=ABCMeta):
 
     @property
     def objects(self):
+        if self._objects is None:
+            self.read()
         return self._objects
 
     @property
     def links(self):
+        if self._links is None:
+            self.read()
         return self._links
 
 

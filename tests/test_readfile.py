@@ -67,9 +67,6 @@ class TestReadFile(object):
     def __check_dicts(self, d):
         reader = d['reader']
         for name in 'objects', 'links':
-            assert getattr(reader, name) is None
-        reader.read()
-        for name in 'objects', 'links':
             assert type(getattr(reader, name) is pd.DataFrame)
         obj_id, link_id = cmso.OBJECT_ID, cmso.LINK_ID
         exp_link_dict = get_link_dict(
