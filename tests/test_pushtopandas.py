@@ -25,12 +25,11 @@
 # #L%
 
 import os
-import configparser
 
 import pandas as pd
 import pytest
 
-from biotracks import cmso
+from biotracks import cmso, config
 from biotracks.pushtopandas import push_to_pandas
 from .common import (
     EXAMPLES_DIR, RELPATHS, get_obj_dict, get_link_dict, get_track_dict
@@ -46,10 +45,8 @@ def data():
         d['obj_df'] = pd.read_csv(os.path.join(dp_dir, 'objects.csv'))
         d['links_df'] = pd.read_csv(os.path.join(dp_dir, 'links.csv'))
         d['tracks_df'] = pd.read_csv(os.path.join(dp_dir, 'tracks.csv'))
-        conf_fn = os.path.join(base_dir, 'biotracks.ini')
-        conf = configparser.ConfigParser()
-        conf.read(conf_fn)
-        d['conf'] = conf
+        conf_fn = os.path.join(base_dir, config.RELPATH)
+        d['conf'] = config.get_conf(conf_fn=conf_fn)
         return d
     return make_data
 

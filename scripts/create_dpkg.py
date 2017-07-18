@@ -30,7 +30,6 @@ Convert a tracking software output file to a datapackage representation.
 
 import os
 import sys
-import configparser
 import argparse
 
 import numpy as np
@@ -41,10 +40,10 @@ import biotracks.plot as plot
 import biotracks.pushtopandas as pushtopandas
 import biotracks.readfile as readfile
 import biotracks.cmso as cmso
+import biotracks.config as config
 from biotracks.utils import get_log_level, get_logger
 
 
-DEFAULT_CONFIG_BASENAME = 'biotracks.ini'
 DEFAULT_OUTPUT_BASENAME = 'dp'
 
 
@@ -73,14 +72,12 @@ def main(argv):
     if args.out_dir is None:
         args.out_dir = DEFAULT_OUTPUT_BASENAME
     if not args.config:
-        args.config = os.path.join(input_dir, DEFAULT_CONFIG_BASENAME)
+        args.config = os.path.join(input_dir, config.RELPATH)
         logger.info('Trying default config file location: "%s"', args.config)
     if not os.path.isfile(args.config):
-        logger.info('Config file not present, using defaults')
-        conf = {'TOP_LEVEL_INFO': {'name': cmso.PACKAGE}, 'TRACKING_DATA': {}}
-    else:
-        conf = configparser.ConfigParser()
-        conf.read(args.config)
+        logger.info('Config file not found, using defaults')
+        args.config = None
+    conf = config.get_conf(conf_fn=args.config)
 
     joint_id = cmso.OBJECT_ID
     link_id = cmso.LINK_ID

@@ -24,18 +24,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
-"""\
-Define standard property names used in CMSO data packages.
-"""
+from configparser import ConfigParser
 
-OBJECTS_TABLE = "cmso_objects_table"
-LINKS_TABLE = "cmso_links_table"
-TRACKS_TABLE = "cmso_tracks_table"
+RELPATH = "biotracks.ini"
+TOP_LEVEL = "TOP_LEVEL_INFO"
+TRACKING = "TRACKING_DATA"
+DEFAULT_NAME = "cmso_tracks"
 
-X_COORD = "cmso_x_coord"
-Y_COORD = "cmso_y_coord"
-Z_COORD = "cmso_z_coord"
-FRAME_ID = "cmso_frame_id"
-OBJECT_ID = "cmso_object_id"
-LINK_ID = "cmso_link_id"
-TRACK_ID = "cmso_track_id"
+
+def get_conf(conf_fn=None):
+    conf = ConfigParser()
+    if conf_fn:
+        conf.read(conf_fn)
+    else:
+        for section in TOP_LEVEL, TRACKING:
+            conf.add_section(section)
+    conf.setdefault(TOP_LEVEL, {}).setdefault("name", DEFAULT_NAME)
+    return conf

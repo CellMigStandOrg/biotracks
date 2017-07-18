@@ -31,7 +31,7 @@ import re
 
 import datapackage
 from jsontableschema import infer
-from . import cmso
+from . import cmso, config
 from .utils import get_logger, mkdir_p
 
 
@@ -62,7 +62,7 @@ def to_json(dp):
 
 def create(reader, out_dir, log_level=None):
     logger = get_logger("createdp.create", level=log_level)
-    top_level_dict = reader.conf["TOP_LEVEL_INFO"]
+    top_level_dict = reader.conf[config.TOP_LEVEL]
     try:
         name = top_level_dict["name"]
     except KeyError:

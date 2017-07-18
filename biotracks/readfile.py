@@ -32,7 +32,7 @@ import pandas as pd
 import xlrd
 
 from .utils import get_logger
-from . import cmso
+from . import cmso, config
 
 
 class AbstractReader(metaclass=ABCMeta):
@@ -41,7 +41,7 @@ class AbstractReader(metaclass=ABCMeta):
         reader_name = self.__class__.__name__
         self.logger = get_logger(reader_name, level=log_level)
         self.fname = fname
-        self.conf = conf or {}
+        self.conf = conf or config.get_conf()
         self.logger.info('%s Reading "%s"', reader_name, fname)
         self._objects = None
         self._links = None
@@ -222,10 +222,10 @@ class TrackMateReader(AbstractReader):
 class CellProfilerReader(AbstractReader):
 
     def read(self):
-        self.x = self.conf["TRACKING_DATA"].get(cmso.X_COORD)
-        self.y = self.conf["TRACKING_DATA"].get(cmso.Y_COORD)
-        self.frame = self.conf["TRACKING_DATA"].get(cmso.FRAME_ID)
-        self.obj_id = self.conf["TRACKING_DATA"].get(cmso.OBJECT_ID)
+        self.x = self.conf[config.TRACKING].get(cmso.X_COORD)
+        self.y = self.conf[config.TRACKING].get(cmso.Y_COORD)
+        self.frame = self.conf[config.TRACKING].get(cmso.FRAME_ID)
+        self.obj_id = self.conf[config.TRACKING].get(cmso.OBJECT_ID)
         # parse the digits used for the tracking settings (e.g. 15)
         digits = self.x.split('_')[2]
         self.track_id = 'TrackObjects_Label_' + digits
@@ -320,9 +320,9 @@ class CellmiaReader(AbstractReader):
 
     def read(self):
         cellmia_link_id = "ID of track"
-        x = self.conf["TRACKING_DATA"].get(cmso.X_COORD)
-        y = self.conf["TRACKING_DATA"].get(cmso.Y_COORD)
-        frame_id = self.conf["TRACKING_DATA"].get(cmso.FRAME_ID)
+        x = self.conf[config.TRACKING].get(cmso.X_COORD)
+        y = self.conf[config.TRACKING].get(cmso.Y_COORD)
+        frame_id = self.conf[config.TRACKING].get(cmso.FRAME_ID)
         df = pd.read_csv(self.fname, sep=self.SEP, encoding=self.ENCODING,
                          usecols=[cellmia_link_id, frame_id, x, y])
         df.reset_index(inplace=True)
@@ -334,7 +334,7 @@ class CellmiaReader(AbstractReader):
 
 class TracksReader(object):
 
-    def __init__(self, fname, conf, log_level=None):
+    def __init__(self, fname, conf=None, log_level=None):
         logger = get_logger(self.__class__.__name__, level=log_level)
         _, ext = os.path.splitext(fname)
         if ext == '.xls':

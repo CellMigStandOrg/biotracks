@@ -25,12 +25,11 @@
 # #L%
 
 import os
-import configparser
 
 import datapackage
 import pytest
 
-from biotracks import createdp, readfile
+from biotracks import createdp, readfile, config
 from .common import EXAMPLES_DIR, RELPATHS
 
 
@@ -42,9 +41,8 @@ def data(tmpdir):
         dp_fn = os.path.join(exp_dp_dir, 'dp.json')
         dp = datapackage.DataPackage(dp_fn)
         in_fn = os.path.join(base_dir, RELPATHS[fmt][-1])
-        conf_fn = os.path.join(base_dir, 'biotracks.ini')
-        conf = configparser.ConfigParser()
-        conf.read(conf_fn)
+        conf_fn = os.path.join(base_dir, config.RELPATH)
+        conf = config.get_conf(conf_fn=conf_fn)
         reader = readfile.TracksReader(in_fn, conf=conf)
         reader.read()
         return {'reader': reader, 'dp': dp, 'dp_dir': str(tmpdir)}
@@ -69,6 +67,6 @@ class TestCreatedp(object):
     def __check_dps(self, d):
         dp = createdp.create(d['reader'], d['dp_dir'])
         assert dp.to_dict() == d['dp'].to_dict()
-        d['reader'].conf['TOP_LEVEL_INFO']['name'] = "CMSO_TRACKS"
+        d['reader'].conf[config.TOP_LEVEL]['name'] = 'CMSO_TRACKS'
         with pytest.raises(ValueError):
             createdp.create(d['reader'], d['dp_dir'])

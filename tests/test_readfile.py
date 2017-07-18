@@ -25,12 +25,11 @@
 # #L%
 
 import os
-import configparser
 
 import pandas as pd
 import pytest
 
-from biotracks import readfile, cmso
+from biotracks import readfile, cmso, config
 from .common import EXAMPLES_DIR, RELPATHS, get_obj_dict, get_link_dict
 
 
@@ -39,9 +38,8 @@ def data():
     def make_data(fmt):
         base_dir = os.path.join(EXAMPLES_DIR, fmt, *RELPATHS[fmt][:-1])
         in_fn = os.path.join(base_dir, RELPATHS[fmt][-1])
-        conf_fn = os.path.join(base_dir, "biotracks.ini")
-        conf = configparser.ConfigParser()
-        conf.read(conf_fn)
+        conf_fn = os.path.join(base_dir, config.RELPATH)
+        conf = config.get_conf(conf_fn=conf_fn)
         reader = readfile.TracksReader(in_fn, conf=conf)
         d = {'reader': reader}
         for k in 'objects', 'links':
