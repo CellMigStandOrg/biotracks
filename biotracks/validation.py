@@ -91,6 +91,7 @@ class Validator(object):
             pass
         else:
             self.validate_tracks(tracks.descriptor)
+        return dp
 
     def validate_objects(self, objects):
         try:

@@ -32,6 +32,7 @@ import pandas as pd
 import xlrd
 
 from .utils import get_logger
+from .validation import Validator
 from . import cmso, config
 
 
@@ -42,6 +43,7 @@ class AbstractReader(metaclass=ABCMeta):
         self.logger = get_logger(reader_name, level=log_level)
         self.fname = fname
         self.conf = conf or config.get_conf()
+        self.log_level = log_level
         self.logger.info('%s Reading "%s"', reader_name, fname)
         self._objects = None
         self._links = None
@@ -61,6 +63,28 @@ class AbstractReader(metaclass=ABCMeta):
         if self._links is None:
             self.read()
         return self._links
+
+
+class BiotracksReader(AbstractReader):
+
+    def read(self):
+        dp = Validator(log_level=self.log_level).validate(self.fname)
+        d = os.path.dirname(self.fname)
+        path_map = dict((_.descriptor["name"], _.descriptor["path"])
+                        for _ in dp.resources)
+        self._objects = pd.read_csv(
+            os.path.join(d, path_map[cmso.OBJECTS_TABLE])
+        )
+        self._links = pd.read_csv(
+            os.path.join(d, path_map[cmso.LINKS_TABLE])
+        )
+        for k in cmso.SPACE_UNIT, cmso.TIME_UNIT:
+            try:
+                v = dp.descriptor[k]
+            except KeyError:
+                pass
+            else:
+                self.conf[config.TOP_LEVEL].setdefault(k, v)
 
 
 class TrackMateReader(AbstractReader):
@@ -356,6 +380,10 @@ class TracksReader(object):
             )
         elif ext == '.txt':
             self.reader = CellmiaReader(
+                fname, conf=conf, log_level=log_level
+            )
+        elif ext == '.json':
+            self.reader = BiotracksReader(
                 fname, conf=conf, log_level=log_level
             )
         else:
