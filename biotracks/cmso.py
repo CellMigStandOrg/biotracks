@@ -40,5 +40,5 @@ OBJECT_ID = "cmso_object_id"
 LINK_ID = "cmso_link_id"
 TRACK_ID = "cmso_track_id"
 
-SPATIAL_UNIT = "cmso_spatial_unit"
+SPACE_UNIT = "cmso_space_unit"
 TIME_UNIT = "cmso_time_unit"

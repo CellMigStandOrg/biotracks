@@ -71,7 +71,7 @@ class TrackMateReader(AbstractReader):
                          self.root.attrib.get('version'))
         self.__model = self.root.find('Model')
         self.conf[config.TOP_LEVEL].setdefault(
-            cmso.SPATIAL_UNIT, self.__model.attrib["spatialunits"]
+            cmso.SPACE_UNIT, self.__model.attrib["spatialunits"]
         )
         self.conf[config.TOP_LEVEL].setdefault(
             cmso.TIME_UNIT, self.__model.attrib["timeunits"]

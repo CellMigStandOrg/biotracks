@@ -64,14 +64,14 @@ class TestReadFile(object):
         self.__check_dicts(d)
         top_level = d['reader'].conf[config.TOP_LEVEL]
         from_source = {}
-        for k in cmso.SPATIAL_UNIT, cmso.TIME_UNIT:
+        for k in cmso.SPACE_UNIT, cmso.TIME_UNIT:
             assert k in top_level
             from_source[k] = top_level[k]
         # check override
-        spatial_unit = from_source[cmso.SPATIAL_UNIT] + "_"
-        top_level[cmso.SPATIAL_UNIT] = spatial_unit
+        spatial_unit = from_source[cmso.SPACE_UNIT] + "_"
+        top_level[cmso.SPACE_UNIT] = spatial_unit
         d['reader'].read()
-        assert top_level[cmso.SPATIAL_UNIT] == spatial_unit
+        assert top_level[cmso.SPACE_UNIT] == spatial_unit
 
     def __check_dicts(self, d):
         reader = d['reader']
