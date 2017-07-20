@@ -24,6 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
+"""\
+Reader objects for tracking data formats.
+"""
+
 import os
 import xml.etree.ElementTree as ET
 from abc import ABCMeta, abstractmethod
@@ -37,8 +41,19 @@ from . import cmso, config
 
 
 class AbstractReader(metaclass=ABCMeta):
-
+    """\
+    Common interface for all tracking data readers.
+    """
     def __init__(self, fname, conf=None, log_level=None):
+        """\
+        Set the input file name for the reader.
+
+        The ``conf`` argument is optional in the general case, but it
+        may be required for a specific reader.
+
+        Actual reading is supposed to happen when the ``read`` method
+        is called.
+        """
         reader_name = self.__class__.__name__
         self.logger = get_logger(reader_name, level=log_level)
         self.fname = fname
@@ -50,16 +65,30 @@ class AbstractReader(metaclass=ABCMeta):
 
     @abstractmethod
     def read(self):
+        """\
+        Read the input file. The concrete implementation of this
+        method should populate the _objects and _links attributes with
+        dataframes containing the corresponding tracking data.  If the
+        specific format contains additional information, for instance
+        on time and space units, this should be added to the ``conf``
+        object (if not already present).
+        """
         return
 
     @property
     def objects(self):
+        """\
+        Return the objects dataframe, calling ``read`` if necessary.
+        """
         if self._objects is None:
             self.read()
         return self._objects
 
     @property
     def links(self):
+        """\
+        Return the links dataframe, calling ``read`` if necessary.
+        """
         if self._links is None:
             self.read()
         return self._links
@@ -364,8 +393,15 @@ class CellmiaReader(AbstractReader):
 
 
 class TracksReader(object):
-
+    """\
+    Generic reader that delegates to specific ones based on file extension.
+    """
     def __init__(self, fname, conf=None, log_level=None):
+        """\
+        Initialize and store a specific reader based on filename extension.
+
+        All other methods delegate to the specific reader.
+        """
         logger = get_logger(self.__class__.__name__, level=log_level)
         _, ext = os.path.splitext(fname)
         if ext == '.xls':
