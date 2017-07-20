@@ -25,27 +25,29 @@
 # #L%
 
 import os
-import configparser
 
 import datapackage
 import pytest
 
-from biotracks import createdp, cmso
+from biotracks import createdp, readfile, config
 from .common import EXAMPLES_DIR, RELPATHS
 
 
 @pytest.fixture()
-def data():
+def data(tmpdir):
     def make_data(fmt):
         base_dir = os.path.join(EXAMPLES_DIR, fmt, *RELPATHS[fmt][:-1])
-        dp_dir = os.path.join(base_dir, 'dp')
-        dp_fn = os.path.join(dp_dir, 'dp.json')
+        exp_dp_dir = os.path.join(base_dir, 'dp')
+        dp_fn = os.path.join(exp_dp_dir, 'dp.json')
         dp = datapackage.DataPackage(dp_fn)
-        conf_fn = os.path.join(base_dir, 'biotracks.ini')
-        conf = configparser.ConfigParser()
-        conf.read(conf_fn)
-        return {'dp': dp, 'dp_dir': dp_dir, 'conf': conf}
-    return make_data
+        in_fn = os.path.join(base_dir, RELPATHS[fmt][-1])
+        conf_fn = os.path.join(base_dir, config.RELPATH)
+        conf = config.get_conf(conf_fn=conf_fn)
+        reader = readfile.TracksReader(in_fn, conf=conf)
+        reader.read()
+        return {'reader': reader, 'dp': dp, 'dp_dir': str(tmpdir)}
+    yield make_data
+    tmpdir.remove(rec=True)
 
 
 class TestCreatedp(object):
@@ -63,9 +65,8 @@ class TestCreatedp(object):
         self.__check_dps(data('TrackMate'))
 
     def __check_dps(self, d):
-        tld = d['conf']['TOP_LEVEL_INFO']
-        dp = createdp.create_dpkg(tld, {}, d['dp_dir'], cmso.OBJECT_ID)
+        dp = createdp.create(d['reader'], d['dp_dir'])
         assert dp.to_dict() == d['dp'].to_dict()
-        tld['name'] = "CMSO_TRACKS"
+        d['reader'].conf[config.TOP_LEVEL]['name'] = 'CMSO_TRACKS'
         with pytest.raises(ValueError):
-            createdp.create_dpkg(tld, {}, d['dp_dir'], cmso.OBJECT_ID)
+            createdp.create(d['reader'], d['dp_dir'])

@@ -31,13 +31,13 @@ from copy import deepcopy
 import pytest
 from datapackage.exceptions import ValidationError
 
-from biotracks import validation, cmso
+from biotracks import validation, cmso, config
 
 OBJECTS_PATH = "objects.csv"
 LINKS_PATH = "links.csv"
 TRACKS_PATH = "tracks.csv"
 JSON = {
-    "name": cmso.PACKAGE,
+    "name": config.DEFAULT_NAME,
     "resources": [
         {
             "name": cmso.OBJECTS_TABLE,

@@ -25,12 +25,11 @@
 # #L%
 
 import os
-import configparser
 
 import pandas as pd
 import pytest
 
-from biotracks import readfile, cmso
+from biotracks import readfile, cmso, config
 from .common import EXAMPLES_DIR, RELPATHS, get_obj_dict, get_link_dict
 
 
@@ -39,15 +38,12 @@ def data():
     def make_data(fmt):
         base_dir = os.path.join(EXAMPLES_DIR, fmt, *RELPATHS[fmt][:-1])
         in_fn = os.path.join(base_dir, RELPATHS[fmt][-1])
-        conf_fn = os.path.join(base_dir, "biotracks.ini")
-        conf = configparser.ConfigParser()
-        conf.read(conf_fn)
-        d = readfile.read_file(in_fn, conf['TRACKING_DATA'])
-        assert set(d) == set(['objects', 'links'])
-        for k in list(d):
-            assert type(d[k]) is pd.DataFrame
+        conf_fn = os.path.join(base_dir, config.RELPATH)
+        conf = config.get_conf(conf_fn=conf_fn)
+        reader = readfile.TracksReader(in_fn, conf=conf)
+        d = {'reader': reader}
+        for k in 'objects', 'links':
             d['%s_path' % k] = os.path.join(base_dir, 'dp', '%s.csv' % k)
-        d['conf'] = conf
         return d
     return make_data
 
@@ -64,17 +60,31 @@ class TestReadFile(object):
         self.__check_dicts(data('CellProfiler'))
 
     def test_trackmate(self, data):
-        self.__check_dicts(data('TrackMate'))
+        d = data('TrackMate')
+        self.__check_dicts(d)
+        top_level = d['reader'].conf[config.TOP_LEVEL]
+        from_source = {}
+        for k in cmso.SPACE_UNIT, cmso.TIME_UNIT:
+            assert k in top_level
+            from_source[k] = top_level[k]
+        # check override
+        spatial_unit = from_source[cmso.SPACE_UNIT] + "_"
+        top_level[cmso.SPACE_UNIT] = spatial_unit
+        d['reader'].read()
+        assert top_level[cmso.SPACE_UNIT] == spatial_unit
 
     def __check_dicts(self, d):
+        reader = d['reader']
+        for name in 'objects', 'links':
+            assert type(getattr(reader, name) is pd.DataFrame)
         obj_id, link_id = cmso.OBJECT_ID, cmso.LINK_ID
         exp_link_dict = get_link_dict(
             pd.read_csv(d['links_path']), obj_id, link_id
         )
-        link_dict = get_link_dict(d['links'], obj_id, link_id)
+        link_dict = get_link_dict(reader.links, obj_id, link_id)
         assert link_dict == exp_link_dict
         exp_obj_dict = get_obj_dict(pd.read_csv(d['objects_path']), obj_id)
-        obj_dict = get_obj_dict(d['objects'], obj_id)
+        obj_dict = get_obj_dict(reader.objects, obj_id)
         assert obj_dict.keys() == exp_obj_dict.keys()
         for k, v in exp_obj_dict.items():
             assert obj_dict[k] == pytest.approx(v)

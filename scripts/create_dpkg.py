@@ -28,11 +28,8 @@
 Convert a tracking software output file to a datapackage representation.
 """
 
-import csv
 import os
 import sys
-import json
-import configparser
 import argparse
 
 import numpy as np
@@ -43,15 +40,11 @@ import biotracks.plot as plot
 import biotracks.pushtopandas as pushtopandas
 import biotracks.readfile as readfile
 import biotracks.cmso as cmso
+import biotracks.config as config
 from biotracks.utils import get_log_level, get_logger
 
 
-DEFAULT_CONFIG_BASENAME = 'biotracks.ini'
 DEFAULT_OUTPUT_BASENAME = 'dp'
-
-
-def to_json(dp):
-    return json.dumps(dp.to_dict(), indent=4, sort_keys=True)
 
 
 def log_level(s):
@@ -79,44 +72,26 @@ def main(argv):
     if args.out_dir is None:
         args.out_dir = DEFAULT_OUTPUT_BASENAME
     if not args.config:
-        args.config = os.path.join(input_dir, DEFAULT_CONFIG_BASENAME)
+        args.config = os.path.join(input_dir, config.RELPATH)
         logger.info('Trying default config file location: "%s"', args.config)
     if not os.path.isfile(args.config):
-        logger.info('Config file not present, using defaults')
-        top_level_dict = {'name': cmso.PACKAGE}
-        track_dict = {}
-    else:
-        conf = configparser.ConfigParser()
-        conf.read(args.config)
-        top_level_dict = conf['TOP_LEVEL_INFO']
-        track_dict = conf['TRACKING_DATA']
+        logger.info('Config file not found, using defaults')
+        args.config = None
+    conf = config.get_conf(conf_fn=args.config)
 
     joint_id = cmso.OBJECT_ID
     link_id = cmso.LINK_ID
     track_id = cmso.TRACK_ID
 
-    # read file - returns a dictionary with objects and links
-    dict_ = readfile.read_file(
-        args.track_fn, track_dict, log_level=args.log_level
+    reader = readfile.TracksReader(
+        args.track_fn, conf=conf, log_level=args.log_level
     )
-    # make directory for the csv and the dp representation
-    directory = args.out_dir
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    # write the dataframes to csv
-    for k, v in dict_.items():
-        v.to_csv(directory + os.sep + k + '.csv',
-                 index=False, quoting=csv.QUOTE_NONE)
-    logger.info('tabular files written to "%s"', directory)
-    dp = createdp.create_dpkg(top_level_dict, dict_, directory, joint_id)
-    # write the data package representation
-    with open(directory + os.sep + 'dp.json', 'w') as f_json:
-        f_json.write(to_json(dp) + '\n')
-    logger.info('json file written to "%s"', directory)
+    reader.read()
+    createdp.create(reader, args.out_dir, log_level=args.log_level)
 
     # push to pandas
     results_dict = pushtopandas.push_to_pandas(
-        directory, joint_id, log_level=args.log_level
+        args.out_dir, joint_id, log_level=args.log_level
     )
     logger.debug('Datapackage pushed to pandas')
 
