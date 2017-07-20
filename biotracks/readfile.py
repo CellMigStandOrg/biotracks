@@ -24,6 +24,10 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # #L%
 
+"""\
+Reader objects for tracking data formats.
+"""
+
 import os
 import xml.etree.ElementTree as ET
 from abc import ABCMeta, abstractmethod
@@ -32,35 +36,84 @@ import pandas as pd
 import xlrd
 
 from .utils import get_logger
+from .validation import Validator
 from . import cmso, config
 
 
 class AbstractReader(metaclass=ABCMeta):
-
+    """\
+    Common interface for all tracking data readers.
+    """
     def __init__(self, fname, conf=None, log_level=None):
+        """\
+        Set the input file name for the reader.
+
+        The ``conf`` argument is optional in the general case, but it
+        may be required for a specific reader.
+
+        Actual reading is supposed to happen when the ``read`` method
+        is called.
+        """
         reader_name = self.__class__.__name__
         self.logger = get_logger(reader_name, level=log_level)
         self.fname = fname
         self.conf = conf or config.get_conf()
+        self.log_level = log_level
         self.logger.info('%s Reading "%s"', reader_name, fname)
         self._objects = None
         self._links = None
 
     @abstractmethod
     def read(self):
+        """\
+        Read the input file. The concrete implementation of this
+        method should populate the _objects and _links attributes with
+        dataframes containing the corresponding tracking data.  If the
+        specific format contains additional information, for instance
+        on time and space units, this should be added to the ``conf``
+        object (if not already present).
+        """
         return
 
     @property
     def objects(self):
+        """\
+        Return the objects dataframe, calling ``read`` if necessary.
+        """
         if self._objects is None:
             self.read()
         return self._objects
 
     @property
     def links(self):
+        """\
+        Return the links dataframe, calling ``read`` if necessary.
+        """
         if self._links is None:
             self.read()
         return self._links
+
+
+class BiotracksReader(AbstractReader):
+
+    def read(self):
+        dp = Validator(log_level=self.log_level).validate(self.fname)
+        d = os.path.dirname(self.fname)
+        path_map = dict((_.descriptor["name"], _.descriptor["path"])
+                        for _ in dp.resources)
+        self._objects = pd.read_csv(
+            os.path.join(d, path_map[cmso.OBJECTS_TABLE])
+        )
+        self._links = pd.read_csv(
+            os.path.join(d, path_map[cmso.LINKS_TABLE])
+        )
+        for k in cmso.SPACE_UNIT, cmso.TIME_UNIT:
+            try:
+                v = dp.descriptor[k]
+            except KeyError:
+                pass
+            else:
+                self.conf[config.TOP_LEVEL].setdefault(k, v)
 
 
 class TrackMateReader(AbstractReader):
@@ -340,8 +393,15 @@ class CellmiaReader(AbstractReader):
 
 
 class TracksReader(object):
-
+    """\
+    Generic reader that delegates to specific ones based on file extension.
+    """
     def __init__(self, fname, conf=None, log_level=None):
+        """\
+        Initialize and store a specific reader based on filename extension.
+
+        All other methods delegate to the specific reader.
+        """
         logger = get_logger(self.__class__.__name__, level=log_level)
         _, ext = os.path.splitext(fname)
         if ext == '.xls':
@@ -356,6 +416,10 @@ class TracksReader(object):
             )
         elif ext == '.txt':
             self.reader = CellmiaReader(
+                fname, conf=conf, log_level=log_level
+            )
+        elif ext == '.json':
+            self.reader = BiotracksReader(
                 fname, conf=conf, log_level=log_level
             )
         else:

@@ -44,6 +44,8 @@ def data():
         d = {'reader': reader}
         for k in 'objects', 'links':
             d['%s_path' % k] = os.path.join(base_dir, 'dp', '%s.csv' % k)
+        dp_path = os.path.join(base_dir, 'dp', 'dp.json')
+        d['bt_reader'] = readfile.BiotracksReader(dp_path, conf=conf)
         return d
     return make_data
 
@@ -74,17 +76,17 @@ class TestReadFile(object):
         assert top_level[cmso.SPACE_UNIT] == spatial_unit
 
     def __check_dicts(self, d):
-        reader = d['reader']
-        for name in 'objects', 'links':
-            assert type(getattr(reader, name) is pd.DataFrame)
-        obj_id, link_id = cmso.OBJECT_ID, cmso.LINK_ID
-        exp_link_dict = get_link_dict(
-            pd.read_csv(d['links_path']), obj_id, link_id
-        )
-        link_dict = get_link_dict(reader.links, obj_id, link_id)
-        assert link_dict == exp_link_dict
-        exp_obj_dict = get_obj_dict(pd.read_csv(d['objects_path']), obj_id)
-        obj_dict = get_obj_dict(reader.objects, obj_id)
-        assert obj_dict.keys() == exp_obj_dict.keys()
-        for k, v in exp_obj_dict.items():
-            assert obj_dict[k] == pytest.approx(v)
+        for reader in (d['reader'], d['bt_reader']):
+            for name in 'objects', 'links':
+                assert type(getattr(reader, name) is pd.DataFrame)
+            obj_id, link_id = cmso.OBJECT_ID, cmso.LINK_ID
+            exp_link_dict = get_link_dict(
+                pd.read_csv(d['links_path']), obj_id, link_id
+            )
+            link_dict = get_link_dict(reader.links, obj_id, link_id)
+            assert link_dict == exp_link_dict
+            exp_obj_dict = get_obj_dict(pd.read_csv(d['objects_path']), obj_id)
+            obj_dict = get_obj_dict(reader.objects, obj_id)
+            assert obj_dict.keys() == exp_obj_dict.keys()
+            for k, v in exp_obj_dict.items():
+                assert obj_dict[k] == pytest.approx(v)
