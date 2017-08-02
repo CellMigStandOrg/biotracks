@@ -385,6 +385,8 @@ class CellmiaReader(AbstractReader):
         frame_id = self.conf[config.TRACKING].get(cmso.FRAME_ID)
         df = pd.read_csv(self.fname, sep=self.SEP, encoding=self.ENCODING,
                          usecols=[cellmia_link_id, frame_id, x, y])
+        # subtract 1 for consistency across software
+        df[cellmia_link_id] = df[cellmia_link_id].apply(lambda x: x-1)
         df.reset_index(inplace=True)
         df.columns = [cmso.OBJECT_ID, cmso.LINK_ID, cmso.FRAME_ID,
                       cmso.X_COORD, cmso.Y_COORD]
