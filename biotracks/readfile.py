@@ -377,21 +377,20 @@ class CellmiaReader(AbstractReader):
 
     ENCODING = "iso-8859-1"
     SEP = "\t"
+    CELLMIA_COLS = ["ID of track", "time index", "cell row", "cell col"]
+    CMSO_COLS = [cmso.LINK_ID, cmso.FRAME_ID, cmso.Y_COORD, cmso.X_COORD]
 
     def read(self):
-        cellmia_link_id = "ID of track"
-        x = self.conf[config.TRACKING].get(cmso.X_COORD)
-        y = self.conf[config.TRACKING].get(cmso.Y_COORD)
-        frame_id = self.conf[config.TRACKING].get(cmso.FRAME_ID)
         df = pd.read_csv(self.fname, sep=self.SEP, encoding=self.ENCODING,
-                         usecols=[cellmia_link_id, frame_id, x, y])
-        # subtract 1 for consistency across software
-        df[cellmia_link_id] -= 1
+                         usecols=self.CELLMIA_COLS)
         df.reset_index(inplace=True)
-        df.columns = [cmso.OBJECT_ID, cmso.LINK_ID, cmso.FRAME_ID,
-                      cmso.X_COORD, cmso.Y_COORD]
+        cols = [cmso.OBJECT_ID] + self.CMSO_COLS
+        df.columns = cols
+        cols[-1], cols[-2] = cols[-2], cols[-1]
+        df = df[cols]
         self._objects = df.drop(cmso.LINK_ID, 1)
         self._links = df.drop([cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD], 1)
+        self._links[cmso.LINK_ID] -= 1  # CELLMIA index is 1-based
 
 
 class TracksReader(object):
