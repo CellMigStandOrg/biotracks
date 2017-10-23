@@ -393,6 +393,19 @@ class CellmiaReader(AbstractReader):
         self._links[cmso.LINK_ID] -= 1  # CELLMIA index is 1-based
 
 
+class MosaicReader(AbstractReader):
+    """
+    User can save detected particles and tracks. The particles file can contain more objects than the tracks file,
+    these would then be solitary, unlinked objects. None of the files contains an object id, cross-referencing files is only possibly
+    by examining coordinates. (Let user convert/upload only the tracks file or the objects as well?) 
+    Tracks file contains the same features as objects file, besides the extra particles. 
+    According to ImageJ documentation, results can be saved as .csv, .tsv or .txt.
+    """
+
+    def read(self):
+
+
+
 class TracksReader(object):
     """\
     Generic reader that delegates to specific ones based on file extension.
