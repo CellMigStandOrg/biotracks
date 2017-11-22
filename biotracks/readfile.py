@@ -302,7 +302,7 @@ class CellProfilerReader(AbstractReader):
         cp_df.reset_index(inplace=True)
         for index, row in cp_df.iterrows():
             objects_dict[index] = [row[self.frame], row[self.x], row[self.y]]
-            objects_df = pd.DataFrame(
+        objects_df = pd.DataFrame(
                 [[key, value[0], value[1], value[2]]
                  for key, value in objects_dict.items()],
                 columns=[self.obj_id, self.frame, self.x, self.y]
@@ -394,15 +394,17 @@ class CellmiaReader(AbstractReader):
 
 
 class MosaicReader(AbstractReader):
-    """
-    User can save detected particles and tracks. The particles file can contain more objects than the tracks file,
-    these would then be solitary, unlinked objects. None of the files contains an object id, cross-referencing files is only possibly
-    by examining coordinates. (Let user convert/upload only the tracks file or the objects as well?) 
-    Tracks file contains the same features as objects file, besides the extra particles. 
-    According to ImageJ documentation, results can be saved as .csv, .tsv or .txt.
-    """
+    
+    MOSAIC_COLS = ["Trajectory", "Frame", "x", "y", "z"]
 
     def read(self):
+        mo_df = pd.read_csv(self.fname, usecols=self.MOSAIC_COLS)
+        mo_df.reset_index(inplace=True)
+        cols = [cmso.OBJECT_ID, cmso.LINK_ID, cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD, cmso.Z_COORD]
+        mo_df.columns = cols
+        self._objects = df.drop(cmso.LINK_ID, 1)
+        self._links = df.drop([cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD], 1)
+        self._links[cmso.LINK_ID] -= 1
 
 
 
@@ -424,14 +426,24 @@ class TracksReader(object):
             self.reader = TrackMateReader(
                 fname, conf=conf, log_level=log_level
             )
-        elif ext == '.csv':
-            self.reader = CellProfilerReader(
+        elif ext == ('.csv' or '.tsv' or '.txt'):
+            #read header and delegate to correct reader
+            #this pandas method can read csv, tsv and txt files
+            df = pd.read_csv(fname, header=None sep=None, nrows=1)
+            trackname = df.iloc[0]
+            if trackname == 'ImageNumber':
+                self.reader = CellProfilerReader(
                 fname, conf=conf, log_level=log_level
             )
-        elif ext == '.txt':
-            self.reader = CellmiaReader(
+            elif trackname == 'ID of track':
+                self.reader = CellmiaReader(
                 fname, conf=conf, log_level=log_level
             )
+            elif trackname == 'Trajectory':
+                self.reader = MosaicReader(
+                fname, conf=conf, log_level=log_level
+            )
+            
         elif ext == '.json':
             self.reader = BiotracksReader(
                 fname, conf=conf, log_level=log_level
