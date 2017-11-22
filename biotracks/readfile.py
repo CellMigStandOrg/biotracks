@@ -398,12 +398,12 @@ class MosaicReader(AbstractReader):
     MOSAIC_COLS = ["Trajectory", "Frame", "x", "y", "z"]
 
     def read(self):
-        mo_df = pd.read_csv(self.fname, usecols=self.MOSAIC_COLS)
+        mo_df = pd.read_csv(self.fname, sep=None, usecols=self.MOSAIC_COLS)
         mo_df.reset_index(inplace=True)
         cols = [cmso.OBJECT_ID, cmso.LINK_ID, cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD, cmso.Z_COORD]
         mo_df.columns = cols
-        self._objects = df.drop(cmso.LINK_ID, 1)
-        self._links = df.drop([cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD], 1)
+        self._objects = mo_df.drop(cmso.LINK_ID, 1)
+        self._links = mo_df.drop([cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD, cmso.Z_COORD], 1)
         self._links[cmso.LINK_ID] -= 1
 
 
@@ -429,8 +429,8 @@ class TracksReader(object):
         elif ext == ('.csv' or '.tsv' or '.txt'):
             #read header and delegate to correct reader
             #this pandas method can read csv, tsv and txt files
-            df = pd.read_csv(fname, header=None sep=None, nrows=1)
-            trackname = df.iloc[0]
+            df = pd.read_csv(fname, header=None, sep=None, nrows=1)
+            trackname = df.iloc[0, 0]
             if trackname == 'ImageNumber':
                 self.reader = CellProfilerReader(
                 fname, conf=conf, log_level=log_level
