@@ -429,7 +429,7 @@ class TracksReader(object):
             self.reader = TrackMateReader(
                 fname, conf=conf, log_level=log_level
             )
-        elif ext == ('.csv' or '.tsv' or '.txt'):
+        elif ext in ['.csv', '.tsv', '.txt']:
             # read header and delegate to correct reader
             # this pandas method can read csv, tsv and txt files
             df = pd.read_csv(fname, header=None, sep=None, nrows=1)
