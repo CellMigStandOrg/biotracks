@@ -7,7 +7,7 @@ Biotracks: a standard format for cell migration-derived tracking files
 .. image:: https://badge.fury.io/py/biotracks.svg
     :target: https://badge.fury.io/py/biotracks
 
-Biotracks provides a standard format for cell migration tracking files and a series of converters to this format from popular tracking sofware packages. The biotracks format is a specialization of the `Frictionless Tabular Data Package <http://specs.frictionlessdata.io/tabular-data-package/>`_ .
+Biotracks provides a standard format for cell migration tracking files and a series of converters from popular tracking sofware packages to the biotracks format, which is a specialization of the `Frictionless Tabular Data Package <http://specs.frictionlessdata.io/tabular-data-package/>`_ .
 
 
 Installation (Python 3 only)
@@ -146,3 +146,14 @@ Example:
   cmso_frame_id = the column name pointing to the frame information
   cmso_object_id = the object identifier
   cmso_link_id = the link identifier
+  
+  
+  Examples
+  --------
+  - `CELLMIA <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/CELLMIA>`_
+  - `CellProfiler <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/CellProfiler>`_
+  - `ICY <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/ICY>`_
+  - `Mosaic <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/Mosaic>`_
+  - `TrackMate <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/TrackMate>`_
+
+  
