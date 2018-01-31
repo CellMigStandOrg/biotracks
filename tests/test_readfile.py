@@ -75,7 +75,7 @@ class TestReadFile(object):
         d['reader'].read()
         assert top_level[cmso.SPACE_UNIT] == spatial_unit
 
-    def test_mosaic(seld, data):
+    def test_mosaic(self, data):
         self.__check_dicts(data('Mosaic'))
 
     def __check_dicts(self, d):
