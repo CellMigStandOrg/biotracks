@@ -65,6 +65,9 @@ class TestPushToPandas(object):
     def test_trackmate(self, data):
         self.__check_dicts(data('TrackMate'))
 
+    def test_mosaic(self, data):
+        self.__check_dicts(data('Mosaic'))
+
     def __check_dicts(self, d):
         obj_id = cmso.OBJECT_ID
         link_id = cmso.LINK_ID

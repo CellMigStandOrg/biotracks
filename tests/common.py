@@ -54,4 +54,5 @@ RELPATHS = {
     'CELLMIA': ['example_1', '0001_mode1_z000_f000_tracking.txt'],
     'TrackMate': ['example_1', 'FakeTracks.xml'],
     'CellProfiler': ['example_1', 'output', 'bloboverlap15_spots.csv'],
+    'Mosaic': ['example_1', 'mosaic_tracks.csv'],
 }
