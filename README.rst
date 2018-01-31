@@ -150,10 +150,10 @@ Example:
   
   Examples
   --------
-  - `CELLMIA <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/CELLMIA>`_
-  - `CellProfiler <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/CellProfiler>`_
-  - `ICY <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/ICY>`_
-  - `Mosaic <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/Mosaic>`_
-  - `TrackMate <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/TrackMate>`_
-
+  
+  `CELLMIA <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/CELLMIA>`_ .
+  `CellProfiler <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/CellProfiler>`_ .
+  `ICY <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/ICY>`_ .
+  `Mosaic <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/Mosaic>`_ .
+  `TrackMate <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/TrackMate>`_ .
   
