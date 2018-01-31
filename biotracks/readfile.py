@@ -44,6 +44,7 @@ class AbstractReader(metaclass=ABCMeta):
     """\
     Common interface for all tracking data readers.
     """
+
     def __init__(self, fname, conf=None, log_level=None):
         """\
         Set the input file name for the reader.
@@ -302,11 +303,11 @@ class CellProfilerReader(AbstractReader):
         cp_df.reset_index(inplace=True)
         for index, row in cp_df.iterrows():
             objects_dict[index] = [row[self.frame], row[self.x], row[self.y]]
-            objects_df = pd.DataFrame(
-                [[key, value[0], value[1], value[2]]
-                 for key, value in objects_dict.items()],
-                columns=[self.obj_id, self.frame, self.x, self.y]
-            )
+        objects_df = pd.DataFrame(
+            [[key, value[0], value[1], value[2]]
+             for key, value in objects_dict.items()],
+            columns=[self.obj_id, self.frame, self.x, self.y]
+        )
         objects_df.columns = [
             cmso.OBJECT_ID, cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD
         ]
@@ -393,10 +394,27 @@ class CellmiaReader(AbstractReader):
         self._links[cmso.LINK_ID] -= 1  # CELLMIA index is 1-based
 
 
+class MosaicReader(AbstractReader):
+
+    MOSAIC_COLS = ["Trajectory", "Frame", "x", "y", "z"]
+
+    def read(self):
+        mo_df = pd.read_csv(self.fname, sep=None, usecols=self.MOSAIC_COLS)
+        mo_df.reset_index(inplace=True)
+        cols = [cmso.OBJECT_ID, cmso.LINK_ID, cmso.FRAME_ID,
+                cmso.X_COORD, cmso.Y_COORD, cmso.Z_COORD]
+        mo_df.columns = cols
+        self._objects = mo_df.drop(cmso.LINK_ID, 1)
+        self._links = mo_df.drop(
+            [cmso.FRAME_ID, cmso.X_COORD, cmso.Y_COORD, cmso.Z_COORD], 1)
+        self._links[cmso.LINK_ID] -= 1
+
+
 class TracksReader(object):
     """\
     Generic reader that delegates to specific ones based on file extension.
     """
+
     def __init__(self, fname, conf=None, log_level=None):
         """\
         Initialize and store a specific reader based on filename extension.
@@ -411,14 +429,24 @@ class TracksReader(object):
             self.reader = TrackMateReader(
                 fname, conf=conf, log_level=log_level
             )
-        elif ext == '.csv':
-            self.reader = CellProfilerReader(
-                fname, conf=conf, log_level=log_level
-            )
-        elif ext == '.txt':
-            self.reader = CellmiaReader(
-                fname, conf=conf, log_level=log_level
-            )
+        elif ext in ['.csv', '.tsv', '.txt']:
+            # read header and delegate to correct reader
+            # this pandas method can read csv, tsv and txt files
+            df = pd.read_csv(fname, header=None, sep=None, nrows=1)
+            trackname = df.iloc[0, 0]
+            if trackname == 'ImageNumber':
+                self.reader = CellProfilerReader(
+                    fname, conf=conf, log_level=log_level
+                )
+            elif trackname == 'ID of track':
+                self.reader = CellmiaReader(
+                    fname, conf=conf, log_level=log_level
+                )
+            elif trackname == 'Trajectory':
+                self.reader = MosaicReader(
+                    fname, conf=conf, log_level=log_level
+                )
+
         elif ext == '.json':
             self.reader = BiotracksReader(
                 fname, conf=conf, log_level=log_level

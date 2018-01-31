@@ -64,6 +64,9 @@ class TestCreatedp(object):
     def test_trackmate(self, data):
         self.__check_dps(data('TrackMate'))
 
+    def test_mosaic(self, data):
+        self.__check_dps(data('Mosaic'))
+
     def __check_dps(self, d):
         dp = createdp.create(d['reader'], d['dp_dir'])
         assert dp.to_dict() == d['dp'].to_dict()
