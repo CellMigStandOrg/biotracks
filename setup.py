@@ -75,5 +75,9 @@ setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Intended Audience :: Science/Research",
     ],
+    install_requires=[
+        "datapackage<1.0",
+        "jsontableschema",
+        "jsontableschema-pandas"],
     packages=find_packages(exclude=('tests', 'docs'))
 )
