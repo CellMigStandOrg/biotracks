@@ -121,8 +121,6 @@ The latter will look like this:
       ]
   }
 
-The script also creates plots of trajectories and turning angles.
-
 
 Configuration
 -------------
