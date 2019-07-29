@@ -10,13 +10,19 @@ Biotracks: a standard format for cell migration-derived tracking files
 Biotracks provides a standard format for cell migration tracking files and a series of converters from popular tracking sofware packages to the biotracks format, which is a specialization of the `Frictionless Tabular Data Package <http://specs.frictionlessdata.io/tabular-data-package/>`_ .
 
 
-Installation (Python 3 only)
-----------------------------
+Installation from sources (Python 3 only)
+-----------------------------------------
 
 .. code-block::
 
    python setup.py install
 
+Installation from PiPy
+----------------------
+
+.. code-block::
+
+    pip install biotracks
 
 Usage
 -----
@@ -114,8 +120,6 @@ The latter will look like this:
           }
       ]
   }
-
-The script also creates plots of trajectories and turning angles.
 
 
 Configuration

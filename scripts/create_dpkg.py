@@ -32,14 +32,14 @@ import os
 import sys
 import argparse
 
-import numpy as np
-import pandas as pd
+# import numpy as np
+# import pandas as pd
 
 import biotracks.createdp as createdp
-import biotracks.plot as plot
-import biotracks.pushtopandas as pushtopandas
+# import biotracks.plot as plot
+# import biotracks.pushtopandas as pushtopandas
 import biotracks.readfile as readfile
-import biotracks.cmso as cmso
+# import biotracks.cmso as cmso
 import biotracks.config as config
 from biotracks.utils import get_log_level, get_logger
 
@@ -79,9 +79,9 @@ def main(argv):
         args.config = None
     conf = config.get_conf(conf_fn=args.config)
 
-    joint_id = cmso.OBJECT_ID
-    link_id = cmso.LINK_ID
-    track_id = cmso.TRACK_ID
+    # joint_id = cmso.OBJECT_ID
+    # link_id = cmso.LINK_ID
+    # track_id = cmso.TRACK_ID
 
     reader = readfile.TracksReader(
         args.track_fn, conf=conf, log_level=args.log_level
@@ -89,51 +89,51 @@ def main(argv):
     reader.read()
     createdp.create(reader, args.out_dir, log_level=args.log_level)
 
-    # push to pandas
-    results_dict = pushtopandas.push_to_pandas(
-        args.out_dir, joint_id, log_level=args.log_level
-    )
-    logger.debug('Datapackage pushed to pandas')
+    # # push to pandas
+    # results_dict = pushtopandas.push_to_pandas(
+    #     args.out_dir, joint_id, log_level=args.log_level
+    # )
+    # logger.debug('Datapackage pushed to pandas')
 
-    objects = results_dict['objects']
-    links = results_dict['links']
-    tracks = results_dict['tracks']
+    # objects = results_dict['objects']
+    # links = results_dict['links']
+    # tracks = results_dict['tracks']
 
-    logger.debug('Number of rows: %d', objects.shape[0])
-    logger.debug('Number of columns: %d', objects.shape[1])
+    # logger.debug('Number of rows: %d', objects.shape[0])
+    # logger.debug('Number of columns: %d', objects.shape[1])
 
-    # aggregation of objects and links for further analytics
-    objects_links = pd.merge(links, objects, how='outer', on=joint_id)
-    # aggregation of tracks as well for further analytics
-    objects_links_tracks = pd.merge(
-        objects_links, tracks, how='outer', on=link_id
-    )
+    # # aggregation of objects and links for further analytics
+    # objects_links = pd.merge(links, objects, how='outer', on=joint_id)
+    # # aggregation of tracks as well for further analytics
+    # objects_links_tracks = pd.merge(
+    #     objects_links, tracks, how='outer', on=link_id
+    # )
 
-    x = cmso.X_COORD
-    y = cmso.Y_COORD
-    frame = cmso.FRAME_ID
-    # basic visualizations
-    objects_links_tracks.sort_values(frame, axis=0, inplace=True)
-    cum_df = plot.compute_cumulative_displacements(
-        objects_links_tracks, link_id, x, y
-    )
-    plot.plotXY(cum_df, track_id, 'x_cum', 'y_cum')
+    # x = cmso.X_COORD
+    # y = cmso.Y_COORD
+    # frame = cmso.FRAME_ID
+    # # basic visualizations
+    # objects_links_tracks.sort_values(frame, axis=0, inplace=True)
+    # cum_df = plot.compute_cumulative_displacements(
+    #     objects_links_tracks, link_id, x, y
+    # )
+    # plot.plotXY(cum_df, track_id, 'x_cum', 'y_cum')
 
-    plot.plotXY(cum_df[cum_df[link_id] == 0], track_id, 'x_cum', 'y_cum')
-    plot.plotXY(objects_links_tracks, track_id, x, y)
-    plot.plotXY(objects_links_tracks, link_id, x, y)
-    logger.info(
-            'normalizing dataset to the origin of the coordinate system...'
-        )
-    norm = plot.normalize(objects_links_tracks, track_id, x, y)
-    plot.plotXY(norm, track_id, 'x_norm', 'y_norm')
-    plot.plotXY(norm, link_id, 'x_norm', 'y_norm')
-    logger.info('computing displacements in the two directions of motion...')
-    norm = plot.compute_displacements(norm, track_id, x, y)
-    logger.info('computing turning angles...')
-    norm = plot.compute_turning_angle(norm, track_id)
-    theta = pd.DataFrame(norm.ta[~np.isnan(norm.ta)])
-    plot.plot_polar(theta, 10)
+    # plot.plotXY(cum_df[cum_df[link_id] == 0], track_id, 'x_cum', 'y_cum')
+    # plot.plotXY(objects_links_tracks, track_id, x, y)
+    # plot.plotXY(objects_links_tracks, link_id, x, y)
+    # logger.info(
+    #         'normalizing dataset to the origin of the coordinate system...'
+    #     )
+    # norm = plot.normalize(objects_links_tracks, track_id, x, y)
+    # plot.plotXY(norm, track_id, 'x_norm', 'y_norm')
+    # plot.plotXY(norm, link_id, 'x_norm', 'y_norm')
+    # logger.info('computing displacements in the two directions of motion...')
+    # norm = plot.compute_displacements(norm, track_id, x, y)
+    # logger.info('computing turning angles...')
+    # norm = plot.compute_turning_angle(norm, track_id)
+    # theta = pd.DataFrame(norm.ta[~np.isnan(norm.ta)])
+    # plot.plot_polar(theta, 10)
 
 
 if __name__ == "__main__":
