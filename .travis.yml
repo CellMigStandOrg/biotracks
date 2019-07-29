@@ -13,6 +13,7 @@ script:
   - flake8 -v .
   - docker build -t cmso/biotracks .
   - docker run cmso/biotracks
+  - docker run --entrypoint bash cmso/biotracks examples/travis_test.sh
 
 deploy:
    provider: pypi
