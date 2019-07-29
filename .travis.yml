@@ -1,3 +1,4 @@
+---
 language: python
 
 python:
@@ -15,8 +16,7 @@ script:
 
 deploy:
    provider: pypi
-   user: sbesson
-   password:
-     secure: "OG9eBtpO/ywdrlhhROGqU0T4n/alMV0XHZ7vzKKp4hEU/NRsQNDegaP7LpCO+Gx8+jzBLJlxEv1mQWg+sHN/s4xo27EMCCPZdYLRIKGA+jZBKEfkL/msJOvpWDkEaH2DjUWifjHGMKxFOrg5dTK16hMVgEWCNpFLgVLw9fOI+KWergES7wVGYP18trNzQHmA43+SmImVaZ07NvRglBWd+S0lCXsFXtEwVVNG33kuMu9fbFfNlG8X26MHDHItoZ1PVc5E3xI8uEKAO5jOBP7gGXVJvyS9zy9reSt+5HR3kJK85fK6JBzOLOxzKSr3yk04rQhehXwgKlkH+LSLAt89+W1VuMx1x9ltBXeG1ZqjTKSAEsII5QzAUKBHiOb9EqmWc6ErUbTZGutITGHVRDJ/wTHEMVke8Kh8bW9Yyab3WpoX0qgw5MQ6SJgSWg2ZxcKOggdtDIMd9cwArBZjNgOequNefbySeQ7dVNq8XGF0ur1WeQVNlNMlo4/13yxJv+1/eYW+fwWS2SfeFueCxn1WTY7XsTxArcL7hEzqHHcQzWi3g7SPQSryMzvBz3frRel6MHyzPyhp1/TOmKrPoogM8FP1DUar6++yUwj7pZ7zU3Qdn5k2qKwNh82loUn4/bdDV3WyO3WK45Op1YgorHeoJr0QHEWj3clolvMy2DuqU2s="
+   user: $PYPI_USER
+   password: $PYPI_PASSWORD
    on:
       tags: true
