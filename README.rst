@@ -165,9 +165,14 @@ Example:
   
 Releases
 --------
-Biotracks 0.5.0: 
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3355530.svg)](https://doi.org/10.5281/zenodo.3355530)
+- Latest release - Biotracks 0.5.0: 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.3355530.svg   
+       :target: https://doi.org/10.5281/zenodo.3355530
+
+- Other releases: https://github.com/CellMigStandOrg/biotracks/releases
+
+
 
 
 
