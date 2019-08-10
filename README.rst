@@ -161,3 +161,14 @@ Example:
   `Mosaic <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/Mosaic>`_ .
   `TrackMate <https://github.com/CellMigStandOrg/biotracks/tree/master/examples/TrackMate>`_ .
   
+  
+  
+Releases
+--------
+Biotracks 0.5.0: 
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3355530.svg)](https://doi.org/10.5281/zenodo.3355530)
+
+
+
+
